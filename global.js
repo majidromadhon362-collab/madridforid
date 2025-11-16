@@ -487,22 +487,24 @@ export async function uploadToImgbb(file, apiKey = IMGBB_KEY) {
   }
 })();
 
-// global.js — PART 8/10 (SIMPLE – NO CROP)
+// global.js — PART 8/10 (SIMPLE – NO CROP & 100% FIX)
 // ---------------- SCHEDULE FLYER UPLOAD & ADD MATCH ----------------
 (function bindScheduleUploadAndAdd() {
   try {
-    // GANTI ID SESUAI HTML KAMU
+    // ELEMENTS
     const schedFile = document.getElementById("fmFlyerFile");
     const schedPreview = document.getElementById("matchPreview");
     const saveMatchBtn = document.getElementById("saveMatchBtn");
+
     const fmMatch = document.getElementById("fmMatch");
     const fmDatetime = document.getElementById("fmDatetime");
     const fmStadium = document.getElementById("fmStadium");
     const fmCategory = document.getElementById("fmCategory");
+    const fmArticle = document.getElementById("fmArticle");
 
     let flyerFile = null;
 
-    // PREVIEW
+    // ================= PREVIEW =================
     if (schedFile) {
       schedFile.addEventListener("change", () => {
         flyerFile = schedFile.files?.[0] || null;
@@ -516,9 +518,11 @@ export async function uploadToImgbb(file, apiKey = IMGBB_KEY) {
       });
     }
 
-    // SAVE BUTTON
+    // ================= SAVE MATCH =================
     if (saveMatchBtn) {
       saveMatchBtn.addEventListener("click", async () => {
+
+        // VALIDATION
         if (!fmMatch.value.trim()) return alert("Nama match wajib diisi");
         if (!fmDatetime.value.trim()) return alert("Datetime wajib diisi");
 
@@ -529,41 +533,50 @@ export async function uploadToImgbb(file, apiKey = IMGBB_KEY) {
         try {
           let flyerUrl = null;
 
-          // ======= UPLOAD TO IMGBB =======
+          // ===== UPLOAD TO IMGBB =====
           if (flyerFile) {
             const res = await uploadToImgbb(flyerFile);
             flyerUrl = res.url;
           }
 
-          // ======= SAVE TO FIRESTORE =======
+          // ===== FORMAT DATETIME =====
+          const datetimeISO = new Date(fmDatetime.value).toISOString();
+
+          // ===== BUILD PAYLOAD =====
           const payload = {
             match: fmMatch.value.trim(),
-            datetime: new Date(fmDatetime.value).toISOString(),
+            datetime: datetimeISO,
             stadium: fmStadium?.value || "",
             category: fmCategory?.value || "laliga",
+            article: fmArticle?.value?.trim() || "",
             createdAt: serverTimestamp()
           };
 
-          if (flyerUrl) payload.flyerUrl = flyerUrl;
+          if (flyerUrl) {
+            payload.flyerUrl = flyerUrl;
+          }
 
+          // ===== SAVE FIRESTORE =====
           await addDoc(collection(db, "schedule"), payload);
 
           alert("Match added!");
 
-          // RESET FORM
+          // ===== RESET FORM =====
           schedFile.value = "";
           flyerFile = null;
           schedPreview.style.display = "none";
+
           fmMatch.value = "";
           fmDatetime.value = "";
           fmStadium.value = "";
           fmCategory.value = "laliga";
+          if (fmArticle) fmArticle.value = "";
 
-          // reload schedule di halaman
+          // ===== RELOAD LISTS =====
           if (typeof loadAllSafe === "function") loadAllSafe(db);
 
         } catch (err) {
-          console.error(err);
+          console.error("save match error:", err);
           alert("Failed: " + err.message);
         }
 

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MadridForID | Admin Panel</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { font-family: "Poppins", sans-serif; background:#f8f9fb; color:#001b3a; }
+    .container { max-width:900px; margin:40px auto; background:#fff; border-radius:12px; padding:24px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    input, textarea { width:100%; padding:8px; border:1px solid #ccc; border-radius:8px; margin-bottom:12px; font-family:inherit; }
+    button { background:#0a2463; color:#fff; border:none; padding:10px 18px; border-radius:6px; cursor:pointer; font-weight:600; }
+    button:hover { background:#163b8a; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚙️ Admin Dashboard</h1>
+    <p id="userInfo">Not signed in</p>
+    <button id="signInBtn">Sign in with Google</button>
+    <button id="signOutBtn" class="hidden">Sign out</button>
+
+    <div id="adminArea" class="hidden">
+      <hr />
+      <h2>Create News</h2>
+      <form id="newsForm">
+        <input type="text" id="newsTitle" placeholder="News Title" required />
+        <input type="date" id="newsDate" required />
+        <input type="text" id="newsImage" placeholder="Image URL" />
+        <textarea id="newsSummary" rows="3" placeholder="Short Summary"></textarea>
+        <textarea id="newsContent" rows="5" placeholder="Full Content (HTML allowed)"></textarea>
+        <button type="submit">Publish News</button>
+      </form>
+
+      <hr />
+      <h2>Create Schedule</h2>
+      <form id="scheduleForm">
+        <input type="text" id="matchTitle" placeholder="Match Title" required />
+        <input type="date" id="matchDate" required />
+        <input type="time" id="matchTime" required />
+        <input type="text" id="matchStadium" placeholder="Stadium" />
+        <input type="text" id="matchImage" placeholder="Image URL" />
+        <textarea id="matchInfo" rows="3" placeholder="Match Details"></textarea>
+        <button type="submit">Add Schedule</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
+      authDomain: "madridforid-web.firebaseapp.com",
+      projectId: "madridforid-web",
+      storageBucket: "madridforid-web.firebasestorage.app",
+      messagingSenderId: "882098167537",
+      appId: "1:882098167537:web:acf50819e9c81adaad1350"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const signInBtn = document.getElementById("signInBtn");
+    const signOutBtn = document.getElementById("signOutBtn");
+    const userInfo = document.getElementById("userInfo");
+    const adminArea = document.getElementById("adminArea");
+
+    async function checkAdmin(uid) {
+      const ref = await db.collection("admins").doc(uid).get();
+      return ref.exists;
+    }
+
+    signInBtn.onclick = () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).catch(alert);
+    };
+
+    signOutBtn.onclick = () => auth.signOut();
+
+    auth.onAuthStateChanged(async user => {
+      if (user) {
+        userInfo.textContent = `Signed in as ${user.displayName} (${user.email})`;
+        signInBtn.classList.add("hidden");
+        signOutBtn.classList.remove("hidden");
+
+        const isAdmin = await checkAdmin(user.uid);
+        if (isAdmin) adminArea.classList.remove("hidden");
+        else userInfo.textContent += " — not an admin";
+      } else {
+        userInfo.textContent = "Not signed in";
+        signInBtn.classList.remove("hidden");
+        signOutBtn.classList.add("hidden");
+        adminArea.classList.add("hidden");
+      }
+    });
+
+    // ====== CREATE NEWS ======
+    document.getElementById("newsForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const payload = {
+        id: "news-" + Date.now(),
+        title: newsTitle.value,
+        date: newsDate.value,
+        image: newsImage.value,
+        summary: newsSummary.value,
+        content: newsContent.value,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      await db.collection("news").doc(payload.id).set(payload);
+      alert("✅ News published!");
+      e.target.reset();
+    });
+
+    // ====== CREATE SCHEDULE ======
+    document.getElementById("scheduleForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const payload = {
+        id: "match-" + Date.now(),
+        title: matchTitle.value,
+        date: matchDate.value,
+        time: matchTime.value,
+        stadium: matchStadium.value,
+        image: matchImage.value,
+        info: matchInfo.value,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      await db.collection("schedules").doc(payload.id).set(payload);
+      alert("✅ Schedule added!");
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>
