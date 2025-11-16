@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MadridForID | Create Schedule</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+
+  <style>
+    :root {
+      --gold: #ffd700;
+      --black: #0a0a0a;
+      --navy: #001b4d;
+      --gray: #e0e0e0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f4f6f8;
+      color: #111;
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--black);
+      color: white;
+      padding: 10px 15px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 30px auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+
+    label { font-weight: 600; display: block; margin: 10px 0 5px; }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-family: inherit;
+    }
+
+    textarea { resize: vertical; min-height: 100px; }
+
+    #flyerPreview {
+      width: 100%;
+      display: none;
+      border-radius: 10px;
+      margin-top: 10px;
+      max-height: 400px;
+      object-fit: contain;
+    }
+
+    #cropArea {
+      margin-top: 10px;
+      display: none;
+      border: 2px solid var(--gold);
+      border-radius: 10px;
+      overflow: hidden;
+      max-height: 400px;
+    }
+
+    #cropArea img {
+      width: 100%;
+      max-height: 400px;
+      display: block;
+    }
+
+    button {
+      background: var(--gold);
+      color: var(--black);
+      font-weight: 700;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    #status { margin-top: 15px; font-weight: 600; text-align: center; }
+  </style>
+</head>
+<body>
+
+<header>🗓️ Create New Schedule</header>
+
+<main>
+  <label>Match Title</label>
+  <input type="text" id="match" placeholder="Contoh: Real Madrid VS Persib Bandung">
+
+  <label>Stadium</label>
+  <input type="text" id="stadium" placeholder="Contoh: Santiago Bernabeu">
+
+  <label>Date & Time</label>
+  <input type="datetime-local" id="datetime">
+
+  <label>Score (opsional)</label>
+  <input type="text" id="score" placeholder="Contoh: 2 - 1">
+
+  <label>Article</label>
+  <textarea id="article" placeholder="Masukkan sorotan utama..."></textarea>
+
+  <label>Flyer Image</label>
+  <input type="file" id="flyerInput" accept="image/*">
+
+  <div id="cropArea">
+    <img id="cropImage" alt="Crop Preview">
+  </div>
+
+  <button id="cropBtn">Crop Flyer</button>
+  <img id="flyerPreview" alt="Hasil Crop Preview" />
+  <button id="saveBtn">Save Schedule</button>
+
+  <p id="status"></p>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
+    authDomain: "madridforid-web.firebaseapp.com",
+    projectId: "madridforid-web",
+    storageBucket: "madridforid-web.firebasestorage.app",
+    messagingSenderId: "882098167537",
+    appId: "1:882098167537:web:acf50819e9c81adaad1350"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  let cropper;
+  const flyerInput = document.getElementById("flyerInput");
+  const cropArea = document.getElementById("cropArea");
+  const cropImage = document.getElementById("cropImage");
+  const flyerPreview = document.getElementById("flyerPreview");
+  const cropBtn = document.getElementById("cropBtn");
+  const statusText = document.getElementById("status");
+  let croppedBlob = null;
+
+  flyerInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      cropImage.src = event.target.result;
+      cropArea.style.display = "block";
+      flyerPreview.style.display = "none";
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(cropImage, {
+        aspectRatio: 16 / 9,
+        viewMode: 1,
+        movable: true,
+        zoomable: true,
+        background: false,
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+
+  cropBtn.addEventListener("click", () => {
+    if (!cropper) return alert("Pilih gambar dulu!");
+    const canvas = cropper.getCroppedCanvas({ width: 1280, height: 720 });
+    flyerPreview.src = canvas.toDataURL("image/jpeg");
+    flyerPreview.style.display = "block";
+    cropArea.style.display = "none";
+    canvas.toBlob((blob) => {
+      croppedBlob = blob;
+      statusText.textContent = "✅ Flyer berhasil di-crop & siap upload!";
+    });
+  });
+
+  document.getElementById("saveBtn").addEventListener("click", async () => {
+    const match = document.getElementById("match").value.trim();
+    const stadium = document.getElementById("stadium").value.trim();
+    const datetime = document.getElementById("datetime").value;
+    const score = document.getElementById("score").value.trim();
+    const article = document.getElementById("article").value.trim();
+
+    if (!match || !stadium || !datetime) return alert("Isi semua data utama!");
+
+    statusText.textContent = "🚀 Uploading flyer...";
+    let flyerUrl = "";
+
+    if (croppedBlob) {
+      const storageRef = ref(storage, `flyers/${Date.now()}-${match}.jpg`);
+      await uploadBytes(storageRef, croppedBlob);
+      flyerUrl = await getDownloadURL(storageRef);
+    }
+
+    statusText.textContent = "📝 Menyimpan ke Firestore...";
+    await addDoc(collection(db, "schedule"), {
+      match,
+      stadium,
+      datetime,
+      time: new Date(datetime).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+      score,
+      article,
+      flyerUrl,
+      createdAt: new Date()
+    });
+
+    statusText.textContent = "✅ Schedule berhasil disimpan!";
+    alert("Schedule berhasil disimpan!");
+  });
+</script>
+
+</body>
+</html>

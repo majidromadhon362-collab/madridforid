@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MadridForID | News Detail</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --gold: #ffd700;
+  --navy: #0b1d3a;
+  --navy-soft: #09152e;
+  --gray: #1a2238;
+  --white: #ffffff;
+}
+
+/* RESET */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; min-height: 100%; overflow-x: hidden; }
+body {
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(180deg, #0b1d3a 0%, #09152e 100%);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+}
+
+/* MAIN */
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+.news-detail {
+  background: var(--gray);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  padding: 20px;
+  color: var(--white);
+}
+.news-detail img {
+  width: 100%;
+  border-radius: 10px;
+  max-height: 400px;
+  object-fit: cover;
+  margin-bottom: 20px;
+}
+.news-detail h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: var(--white);
+}
+.news-detail p {
+  line-height: 1.6;
+  font-size: 1rem;
+  color: #d1d1d1;
+}
+
+/* Like + Comment */
+.interact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+.like-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #aaa;
+  transition: transform .15s ease, color .2s;
+}
+.like-btn:hover { transform: scale(1.1); color: var(--gold); }
+.like-btn.liked { color: #e63946; }
+
+/* COMMENT SECTION */
+.comment-section {
+  margin-top: 30px;
+}
+.comment-section h3 {
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.comment-card {
+  background: #14284a;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  max-width: 80%;
+  position: relative;
+  word-wrap: break-word;
+  color: var(--white);
+}
+.comment-card.me {
+  background: var(--gold);
+  align-self: flex-end;
+  color: #000;
+}
+.comment-card strong {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+/* COMMENT BOX */
+.comment-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gray);
+  border-radius: 25px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  margin-top: 20px;
+}
+.comment-box textarea {
+  flex: 1;
+  border: none;
+  resize: none;
+  height: 40px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  background: transparent;
+  color: var(--white);
+}
+.comment-box textarea::placeholder {
+  color: #aaa;
+}
+.comment-box button {
+  background: var(--gold);
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  font-weight: bold;
+  color: var(--navy);
+}
+
+/* FOOTER */
+footer {
+  background: var(--navy);
+  color: var(--white);
+  text-align: center;
+  padding: 20px;
+  font-size: 0.9rem;
+  margin-top: auto;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+</style>
+</head>
+
+<body>
+<div id="include-header"></div>
+<script>
+(async()=>{
+  const res = await fetch("header.html?cb=" + Date.now());
+  const html = await res.text();
+  const container = document.getElementById("include-header");
+  container.innerHTML = html;
+
+  // ⛽️ Jalankan ulang semua <script> di dalam header.html
+  container.querySelectorAll("script").forEach((oldScript)=>{
+    const newScript=document.createElement("script");
+    if(oldScript.type)newScript.type=oldScript.type;
+    if(oldScript.src)newScript.src=oldScript.src;
+    else newScript.textContent=oldScript.textContent;
+    document.body.appendChild(newScript);
+  });
+})();
+</script>
+
+<main>
+  <div id="newsDetail" class="news-detail">Loading...</div>
+
+  <div class="interact">
+    <button id="likeBtn" class="like-btn">❤️</button>
+    <span id="likeCount">0 Likes</span>
+  </div>
+
+  <div class="comment-section">
+    <h3>💬 Comments</h3>
+    <div id="commentList" style="display:flex;flex-direction:column;"></div>
+    <div id="commentBoxContainer"></div>
+  </div>
+</main>
+
+<footer>© 2025 MadridForID | Fanbase Real Madrid Indonesia</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, doc, getDoc, updateDoc, arrayUnion, arrayRemove, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
+  authDomain: "madridforid-web.firebaseapp.com",
+  projectId: "madridforid-web",
+  storageBucket: "madridforid-web.appspot.com",
+  messagingSenderId: "882098167537",
+  appId: "1:882098167537:web:acf50819e9c81adaad1350"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+const newsDetail = document.getElementById("newsDetail");
+const likeBtn = document.getElementById("likeBtn");
+const likeCount = document.getElementById("likeCount");
+const commentList = document.getElementById("commentList");
+const commentBoxContainer = document.getElementById("commentBoxContainer");
+
+let user = null;
+const newsId = new URLSearchParams(window.location.search).get("id");
+const docRef = doc(db, "news", newsId);
+
+// AUTH
+onAuthStateChanged(auth, (u) => {
+  user = u;
+  renderCommentBox();
+});
+
+// LOAD NEWS DETAIL
+onSnapshot(docRef, (snap) => {
+  if (!snap.exists()) {
+    newsDetail.innerHTML = "<p>News not found.</p>";
+    return;
+  }
+  const d = snap.data();
+  newsDetail.innerHTML = `
+    <img src="${d.image}" alt="${d.title}">
+    <h2>${d.title}</h2>
+    <p>${d.content}</p>
+  `;
+  likeCount.textContent = `${d.likes || 0} Likes`;
+  renderComments(d.comments || []);
+});
+
+// LIKE SYSTEM
+likeBtn.addEventListener("click", async () => {
+  if (!user) return alert("Please sign in to like this post.");
+  const snap = await getDoc(docRef);
+  const d = snap.data();
+  const liked = d.likedBy || [];
+  if (liked.includes(user.uid)) {
+    await updateDoc(docRef, { likes: increment(-1), likedBy: arrayRemove(user.uid) });
+    likeBtn.classList.remove("liked");
+  } else {
+    await updateDoc(docRef, { likes: increment(1), likedBy: arrayUnion(user.uid) });
+    likeBtn.classList.add("liked");
+  }
+});
+
+// COMMENT SYSTEM
+function renderCommentBox() {
+  if (!user) {
+    commentBoxContainer.innerHTML = `
+      <div class="comment-box">
+        <textarea disabled placeholder="Sign in to comment"></textarea>
+        <button disabled>➤</button>
+      </div>
+    `;
+    return;
+  }
+  commentBoxContainer.innerHTML = `
+    <div class="comment-box">
+      <textarea id="commentInput" placeholder="Write a comment..."></textarea>
+      <button id="sendComment">➤</button>
+    </div>
+  `;
+  document.getElementById("sendComment").addEventListener("click", postComment);
+}
+
+async function postComment() {
+  const input = document.getElementById("commentInput");
+  const text = input.value.trim();
+  if (!text) return;
+  await updateDoc(docRef, {
+    comments: arrayUnion({ name: user.displayName, uid: user.uid, text })
+  });
+  input.value = "";
+}
+
+function renderComments(comments) {
+  commentList.innerHTML = comments.length
+    ? comments.map(c => `
+        <div class="comment-card ${user && c.uid === user.uid ? 'me' : ''}">
+          <strong>${c.name}</strong>
+          ${c.text}
+        </div>
+      `).join("")
+    : "<p style='color:#aaa;'>No comments yet.</p>";
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,587 @@
+<!-- SCHEDULE.HTML — PART 1/3 (Head + CSS + top body) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MadridForID | Schedule</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Cropper CSS (needed for flyer crop) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
+
+  <style>
+    :root{
+      --gold:#ffd700;
+      --navy:#0b1d3a;
+      --bg-grad-start:#0b1d3a;
+      --bg-grad-end:#09152e;
+      --card:#1a2238;
+      --muted:#c8c8d0;
+      --success:#34a853;
+      --danger:#e63946;
+      --radius:12px;
+    }
+    
+    /* Spinner untuk tombol Save */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin .7s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;width:100%;font-family:"Poppins",sans-serif;background:linear-gradient(180deg,var(--bg-grad-start),var(--bg-grad-end));color:#fff}
+    body{display:flex;flex-direction:column;min-height:100vh}
+    main{max-width:1100px;margin:26px auto;padding:18px;flex:1}
+
+    .top-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+    .title{font-size:1.25rem;font-weight:700}
+    .controls{display:flex;gap:10px;align-items:center}
+    .btn{background:var(--gold);color:#000;padding:8px 12px;border-radius:10px;border:0;font-weight:700;cursor:pointer}
+    .btn.ghost{background:transparent;color:var(--gold);border:1px solid rgba(255,255,255,0.08)}
+    .filter-label{color:var(--muted);font-size:0.95rem}
+
+    /* grid list */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:14px}
+    .card{background:var(--card);border-radius:12px;padding:12px;position:relative;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,0.28)}
+    .thumb{width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#111;margin-bottom:10px}
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .match-title{font-weight:700;margin-bottom:6px}
+    .meta{color:var(--muted);font-size:0.9rem;margin-bottom:6px}
+    .read-more{display:inline-block;background:var(--gold);color:#000;padding:8px 10px;border-radius:8px;text-decoration:none;font-weight:700}
+
+    /* category chip bottom-right */
+    .cat-chip{
+      position:absolute;
+      right:12px;
+      bottom:12px;
+      background:rgba(0,0,0,0.45);
+      color:#fff;padding:6px 8px;border-radius:10px;font-weight:700;font-size:0.8rem;
+      backdrop-filter: blur(4px);
+      border:1px solid rgba(255,255,255,0.04);
+    }
+
+    /* status label top-right */
+    .status-label{
+      position:absolute;right:12px;top:12px;padding:6px 10px;font-size:.75rem;font-weight:700;border-radius:8px;z-index:20;
+    }
+    .status-upcoming{background:var(--gold);color:#000}
+    .status-live{background:var(--danger);color:#fff;animation:blink 1s infinite}
+    .status-finished{background:#444;color:#fff}
+    @keyframes blink{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
+
+    /* delete button on cards (admin only) */
+    .card .delete-btn{
+      position:absolute;right:12px;top:46px;background:var(--danger);color:#fff;border:0;padding:6px 8px;border-radius:8px;cursor:pointer;display:none;z-index:25;
+    }
+
+    /* small helpers */
+    .kicker{color:var(--muted);font-size:0.95rem}
+    .empty{color:#ddd;padding:18px;background:rgba(255,255,255,0.02);border-radius:10px;text-align:center}
+
+    /* picker modal */
+    .picker-back{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:none;align-items:center;justify-content:center;z-index:2000}
+    .picker-back.show{display:flex}
+    .picker{background:#fff;color:#000;border-radius:12px;padding:18px;width:92%;max-width:420px;display:grid;gap:12px}
+    .picker .opt{padding:12px;border-radius:10px;background:#f4f4f4;cursor:pointer;font-weight:700;text-align:center}
+    .picker .opt:hover{background:var(--gold);color:#000}
+
+    /* add modal (with crop preview) */
+    .add-modal{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:none;align-items:center;justify-content:center;z-index:2200}
+    .add-modal.show{display:flex}
+    .form-card{background:#fff;color:#000;border-radius:12px;padding:16px;width:92%;max-width:520px;display:grid;gap:10px}
+    .form-group label{font-weight:700;margin-bottom:6px;display:block}
+    .form-group input,.form-group textarea,.form-group select{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd}
+    #matchPreview{max-width:100%;border-radius:10px;display:none;margin-top:8px}
+
+    /* hero modal references safety (if exists) */
+    .hero-modal{display:none}
+
+    /* spinner */
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner-inline{display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;vertical-align:middle;animation:spin .8s linear infinite;margin-right:8px}
+
+    /* responsive */
+    @media(max-width:700px){
+      .top-row{flex-direction:column;align-items:flex-start}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- header (loaded by global.js) -->
+  <div id="include-header"></div>
+
+  <main>
+    <div class="top-row">
+      <div>
+        <div class="title">📅 Schedule</div>
+        <div class="kicker">Default: <span id="currentFilterText">All match</span></div>
+      </div>
+
+      <div class="controls">
+        <button id="openPickerBtn" class="btn ghost">Filter League</button>
+        <button id="addMatchBtn" class="btn" style="display:none">＋ Add Match</button>
+      </div>
+    </div>
+
+    <div id="infoArea" class="kicker" style="margin-bottom:12px">Loading schedule...</div>
+
+    <!-- GRID placeholder (will be rendered by JS) -->
+    <div id="grid" class="grid"></div>
+
+    <div id="emptyState" class="empty" style="display:none;margin-top:12px">No matches found for this category.</div>
+    
+    <!-- Picker Modal -->
+    <div id="pickerBack" class="picker-back">
+      <div class="picker">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>Choose Category</strong>
+          <button id="closePicker" style="background:transparent;border:0;cursor:pointer">✕</button>
+        </div>
+
+        <div class="opt" data-val="all">All Match</div>
+        <div class="opt" data-val="laliga">La Liga</div>
+        <div class="opt" data-val="ucl">UEFA Champions League</div>
+        <div class="opt" data-val="copadelrey">Copa del Rey</div>
+        <div class="opt" data-val="spanishsuper">Spanish Super Cup</div>
+        <div class="opt" data-val="uefasuper">UEFA Super Cup</div>
+        <div class="opt" data-val="clubwc">FIFA Club World Cup</div>
+      </div>
+    </div>
+
+    <!-- Admin Add Match Modal -->
+    <div id="addModal" class="add-modal" aria-hidden="true">
+      <div class="form-card">
+        <h3>Add Schedule (Admin)</h3>
+
+        <div class="form-group">
+          <label>Match (e.g. Real Madrid vs Elche)</label>
+          <input id="fmMatch" placeholder="Match">
+        </div>
+
+        <div class="form-group">
+          <label>Datetime (yyyy-mm-dd hh:mm)</label>
+          <input id="fmDatetime" type="datetime-local">
+        </div>
+
+        <div class="form-group">
+          <label>Stadium</label>
+          <input id="fmStadium" placeholder="Stadium">
+        </div>
+
+        <div class="form-group">
+          <label>Category</label>
+          <select id="fmCategory">
+            <option value="laliga">La Liga</option>
+            <option value="ucl">UEFA Champions League</option>
+            <option value="copadelrey">Copa del Rey</option>
+            <option value="spanishsuper">Spanish Super Cup</option>
+            <option value="uefasuper">UEFA Super Cup</option>
+            <option value="clubwc">FIFA Club World Cup</option>
+          </select>
+        </div>
+
+        <!-- Flyer upload -->
+        <div class="form-group">
+          <label>Upload Flyer (16:9)</label>
+          <input id="fmFlyerFile" type="file" accept="image/*">
+          <img id="matchPreview" />
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <button id="saveMatchBtn" class="btn">Save</button>
+          <button id="cancelAddBtn" class="btn ghost">Cancel</button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- CropperJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+  <!-- Firestore + Main Logic -->
+  <script type="module">
+    import { 
+      db, auth 
+    } from "./global.js";
+
+    import {
+      collection, query, orderBy, getDocs, addDoc,
+      deleteDoc, doc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    import {
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    
+    // ==========================
+    // CONFIG & DOM
+    // ==========================
+    const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
+
+    const grid = document.getElementById("grid");
+    const infoArea = document.getElementById("infoArea");
+    const emptyState = document.getElementById("emptyState");
+
+    const openPickerBtn = document.getElementById("openPickerBtn");
+    const pickerBack = document.getElementById("pickerBack");
+    const closePicker = document.getElementById("closePicker");
+
+    const addMatchBtn = document.getElementById("addMatchBtn");
+    const addModal = document.getElementById("addModal");
+    const cancelAddBtn = document.getElementById("cancelAddBtn");
+    const saveMatchBtn = document.getElementById("saveMatchBtn");
+
+    const fmMatch = document.getElementById("fmMatch");
+    const fmDatetime = document.getElementById("fmDatetime");
+    const fmStadium = document.getElementById("fmStadium");
+    const fmCategory = document.getElementById("fmCategory");
+
+    const fmFlyerFile = document.getElementById("fmFlyerFile");
+    const matchPreview = document.getElementById("matchPreview");
+
+    let flyerCropper = null;
+    let flyerBlob = null;
+
+    let currentCategory = "all";
+    let allSchedules = [];
+
+
+    // ==========================
+    // COUNTDOWN FORMATTER
+    // ==========================
+    function getCountdown(dt) {
+      const now = Date.now();
+      const diff = dt.getTime() - now;
+      if (diff <= 0) return null;
+
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+
+      return `${days}D ${hours}H ${minutes}M`;
+    }
+
+
+    // ==========================
+    // STATUS CHECKER
+    // ==========================
+    function getStatus(v) {
+      const dt = new Date(v.datetime);
+      const now = Date.now();
+      const start = dt.getTime();
+      const end = start + (2 * 60 * 60 * 1000); // 2 jam
+
+      if (now < start) return "upcoming";
+      if (now >= start && now <= end) return "live";
+      return "finished";
+    }
+
+
+    // ==========================
+    // CARD GENERATOR
+    // ==========================
+    function makeCard(item, isAdmin) {
+      const v = item.data;
+      const id = item.id;
+
+      const dt = new Date(v.datetime);
+      const status = getStatus(v);
+      const countdown = getCountdown(dt);
+
+      const flyer = v.flyerUrl 
+        ? v.flyerUrl 
+        : "https://i.postimg.cc/PrV4N35r/user.png";
+
+      const el = document.createElement("div");
+      el.className = "card";
+
+      // STATUS LABEL
+      let statusHTML = "";
+      if (status === "upcoming") {
+        statusHTML = `<div class="status-label status-upcoming">UPCOMING</div>`;
+      } else if (status === "live") {
+        statusHTML = `<div class="status-label status-live">LIVE</div>`;
+      } else {
+        statusHTML = `<div class="status-label status-finished">FINISHED</div>`;
+      }
+
+      // COUNTDOWN
+      const countdownHTML = status === "upcoming" 
+        ? `<div class="meta" style="font-weight:700">⏳ ${countdown}</div>`
+        : "";
+
+      // DELETE BUTTON (admin only)
+      const delBtn = isAdmin
+        ? `<button class="delete-btn" data-id="${id}">Delete</button>`
+        : "";
+
+      el.innerHTML = `
+        ${statusHTML}
+        ${delBtn}
+
+        <div class="thumb">
+          <img src="${flyer}" alt="flyer">
+        </div>
+
+        <div class="match-title">${v.match}</div>
+
+        <div class="meta">
+          📅 ${dt.toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"})}
+          • ${dt.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})}
+        </div>
+
+        <div class="meta">🏟 ${v.stadium}</div>
+
+        ${countdownHTML}
+
+        <a class="read-more" href="schedule-detail.html?id=${id}">
+          Read More
+        </a>
+
+        <div class="cat-chip">${v.category.toUpperCase()}</div>
+      `;
+
+      return el;
+    }
+
+
+    // ==========================
+    // RENDER LIST
+    // ==========================
+    function renderList(isAdmin) {
+  let filtered = allSchedules;
+
+  if (currentCategory !== "all") {
+    filtered = filtered.filter(
+      s => s.data.category === currentCategory
+    );
+  }
+
+  // pastikan bersih setiap render
+  infoArea.textContent = "";
+
+  if (filtered.length === 0) {
+    grid.innerHTML = "";
+    emptyState.style.display = "block";
+    infoArea.textContent = "No matches found.";
+    return;
+  }
+
+  emptyState.style.display = "none";  
+  infoArea.textContent = "";   // 🔥 FIX penting
+
+  // SORTING (LIVE → UP → FINISHED)
+  filtered.sort((a,b) => {
+    const A = getStatus(a.data);
+    const B = getStatus(b.data);
+    const order = { live: 0, upcoming: 1, finished: 2 };
+    const diff = order[A] - order[B];
+    if (diff !== 0) return diff;
+
+    return new Date(a.data.datetime) - new Date(b.data.datetime);
+  });
+
+  grid.innerHTML = "";
+  filtered.forEach(item => {
+    const card = makeCard(item, isAdmin);
+    grid.appendChild(card);
+  });
+}
+
+
+    // ==========================
+    // LOAD DATA
+    // ==========================
+    async function loadSchedules(isAdmin = false) {
+      infoArea.textContent = "Loading...";
+      grid.innerHTML = "";
+
+      const q = query(collection(db, "schedule"), orderBy("datetime", "asc"));
+      const snap = await getDocs(q);
+
+      allSchedules = [];
+      snap.forEach(docSnap => {
+        allSchedules.push({
+          id: docSnap.id,
+          data: docSnap.data()
+        });
+      });
+
+      renderList(isAdmin);
+      infoArea.textContent = "";
+    }
+
+
+    // ==========================
+    // PICKER OPEN / CLOSE
+    // ==========================
+    openPickerBtn.onclick = () => pickerBack.classList.add("show");
+    closePicker.onclick = () => pickerBack.classList.remove("show");
+
+    pickerBack.onclick = (e) => {
+      if (e.target === pickerBack) pickerBack.classList.remove("show");
+    };
+
+    document.querySelectorAll(".picker .opt").forEach(x => {
+      x.onclick = () => {
+        currentCategory = x.dataset.val;
+        document.getElementById("currentFilterText").textContent = x.textContent;
+        pickerBack.classList.remove("show");
+        renderList(window._isAdmin);
+      };
+    });
+
+
+    // ==========================
+    // ADD MODAL
+    // ==========================
+    addMatchBtn.onclick = () => addModal.classList.add("show");
+    cancelAddBtn.onclick = () => addModal.classList.remove("show");
+
+
+    // ==========================
+    // HANDLE FLYER UPLOAD + CROP
+    // ==========================
+    fmFlyerFile.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        matchPreview.src = reader.result;
+        matchPreview.style.display = "block";
+
+        // destroy old cropper
+        if (flyerCropper) flyerCropper.destroy();
+
+        flyerCropper = new Cropper(matchPreview, {
+          aspectRatio: 16/9,
+          viewMode: 1,
+          autoCropArea: 1
+        });
+      };
+      reader.readAsDataURL(file);
+    };
+
+
+    // ==========================
+    // SAVE NEW MATCH
+    // ==========================
+    saveMatchBtn.onclick = async () => {
+      const match = fmMatch.value.trim();
+      const dtVal = fmDatetime.value;
+      const stadium = fmStadium.value.trim();
+      const category = fmCategory.value;
+
+      if (!match || !dtVal) {
+        alert("Match & datetime wajib diisi.");
+        return;
+      }
+
+      // spinner
+      saveMatchBtn.disabled = true;
+      saveMatchBtn.innerHTML = `<span class="spinner-inline"></span>Saving...`;
+
+      let flyerUrl = null;
+
+      // upload flyer (cropped)
+      if (flyerCropper) {
+        const canvas = flyerCropper.getCroppedCanvas({
+          width: 1600,
+          height: 900
+        });
+
+        const blob = await new Promise(resolve =>
+          canvas.toBlob(resolve, "image/jpeg", 0.85)
+        );
+
+        const filename = `flyers/${Date.now()}.jpg`;
+        const { getStorage, ref, uploadBytes, getDownloadURL } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js");
+
+        const storage = getStorage();
+        const storageRef = ref(storage, filename);
+
+        await uploadBytes(storageRef, blob);
+        flyerUrl = await getDownloadURL(storageRef);
+      }
+
+      // save firestore
+      await addDoc(collection(db, "schedule"), {
+        match,
+        datetime: new Date(dtVal).toISOString(),
+        stadium,
+        category,
+        flyerUrl,
+        createdAt: serverTimestamp()
+      });
+
+      alert("Schedule added.");
+
+      addModal.classList.remove("show");
+      saveMatchBtn.disabled = false;
+      saveMatchBtn.textContent = "Save";
+
+      fmMatch.value = "";
+      fmDatetime.value = "";
+      fmStadium.value = "";
+      fmFlyerFile.value = "";
+      matchPreview.style.display = "none";
+
+      flyerCropper?.destroy();
+      flyerCropper = null;
+
+      loadSchedules(window._isAdmin);
+    };
+
+
+    // ==========================
+    // DELETE MATCH (ADMIN)
+    // ==========================
+    document.addEventListener("click", async (e) => {
+      if (!e.target.classList.contains("delete-btn")) return;
+
+      if (!window._isAdmin) return alert("Admin only.");
+
+      const id = e.target.dataset.id;
+      if (!confirm("Delete this match?")) return;
+
+      await deleteDoc(doc(db, "schedule", id));
+
+      alert("Deleted.");
+      loadSchedules(true);
+    });
+
+
+    // ==========================
+    // AUTH (SHOW ADMIN BUTTON)
+    // ==========================
+    onAuthStateChanged(auth, (user) => {
+      window._isAdmin = user && user.uid === ADMIN_UID;
+
+      if (window._isAdmin) {
+        addMatchBtn.style.display = "inline-block";
+      } else {
+        addMatchBtn.style.display = "none";
+      }
+
+      loadSchedules(window._isAdmin);
+    });
+
+  </script>
+
+</body>
+</html>

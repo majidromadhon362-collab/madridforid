@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MadridForID | About</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --gold:#ffd700;
+  --navy:#0b1d3a;
+  --navy-soft:#10254d;
+  --white:#ffffff;
+  --ig:#E1306C;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(180deg,var(--navy),var(--navy-soft));
+  color:var(--white);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow-x:hidden;
+}
+
+/* Container */
+main{
+  flex:1;
+  width:100%;
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
+}
+
+/* Cards */
+.card{
+  background:rgba(255,255,255,0.08);
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 8px 22px rgba(0,0,0,0.25);
+  margin-bottom:20px;
+}
+.card h2,
+.card h3{
+  color:var(--gold);
+  margin-bottom:8px;
+}
+
+/* Grid */
+.row{
+  display:flex;
+  gap:18px;
+  margin-bottom:18px;
+}
+.col{
+  flex:1;
+  background:rgba(255,255,255,0.08);
+  border-radius:12px;
+  padding:18px;
+  box-shadow:0 8px 22px rgba(0,0,0,0.25);
+}
+
+/* Responsive */
+@media(max-width:800px){
+  .row{flex-direction:column}
+}
+
+/* Footer */
+footer{
+  background:var(--navy);
+  padding:18px;
+  text-align:center;
+  color:var(--white);
+  margin-top:auto;
+  border-top:1px solid rgba(255,255,255,0.1);
+}
+
+/* Ensure header placeholder is on top */
+#include-header{ position: relative; z-index: 5000; }
+
+/* Instagram floating button */
+#igBtn{
+  position:fixed;
+  right:16px;
+  bottom:16px;
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+  box-shadow:0 8px 20px rgba(0,0,0,0.25);
+  z-index:99999;
+  text-decoration:none;
+  color:#fff;
+}
+#igBtn img{width:22px;height:22px;border-radius:50%;}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER (auto load) -->
+<div id="include-header"></div>
+
+<!-- load global as module (IMPORTANT) -->
+<script type="module" src="global.js" defer></script>
+
+<script>
+/*
+ Improved header injector:
+ - fetch header.html
+ - inject HTML
+ - re-attach any <script> tags keeping their type (module or not)
+ - wait for external scripts to load before dispatching "header-ready"
+*/
+(async () => {
+  try {
+    const res = await fetch("header.html?cb=" + Date.now());
+    if (!res.ok) {
+      console.error("Failed to fetch header.html", res.status);
+      return;
+    }
+    const html = await res.text();
+    const container = document.getElementById("include-header");
+    container.innerHTML = html;
+
+    // Collect scripts inside injected header
+    const oldScripts = Array.from(container.querySelectorAll("script"));
+    let pending = oldScripts.length;
+
+    if (pending === 0) {
+      // no scripts -> immediately ready
+      window.dispatchEvent(new Event("header-ready"));
+      return;
+    }
+
+    for (const old of oldScripts) {
+      const newScript = document.createElement("script");
+
+      // preserve type (important for module scripts)
+      if (old.type) newScript.type = old.type;
+
+      if (old.src) {
+        // external script
+        newScript.src = old.src + (old.src.includes("?") ? "&cb=" + Date.now() : "?cb=" + Date.now());
+        // preserve async/defer if present on original
+        if (old.async) newScript.async = true;
+        if (old.defer) newScript.defer = true;
+
+        newScript.addEventListener("load", () => {
+          pending--;
+          if (pending === 0) window.dispatchEvent(new Event("header-ready"));
+        });
+        newScript.addEventListener("error", () => {
+          console.warn("Header script failed to load:", old.src);
+          pending--;
+          if (pending === 0) window.dispatchEvent(new Event("header-ready"));
+        });
+
+        document.body.appendChild(newScript);
+      } else {
+        // inline script: copy text and execute immediately
+        newScript.textContent = old.textContent;
+        document.body.appendChild(newScript);
+        pending--;
+        if (pending === 0) window.dispatchEvent(new Event("header-ready"));
+      }
+
+      // remove the old script tag to avoid duplicate execution in some envs
+      old.remove();
+    }
+  } catch (e) {
+    console.error("Error injecting header:", e);
+    window.dispatchEvent(new Event("header-ready")); // still fire so pages don't hang
+  }
+})();
+</script>
+<!-- END HEADER -->
+
+<main>
+
+  <div class="card">
+    <h2>Selamat Datang di MadridForID</h2>
+    <p>
+      Komunitas digital Madridista Indonesia.    
+      Tempat berita, jadwal, gallery, dan informasi lengkap Real Madrid.
+    </p>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <h3>Visi</h3>
+      <p>
+        Menjadi komunitas digital terbesar dan terpercaya bagi Madridista Indonesia,
+        dengan konten berkualitas dan lingkungan positif.
+      </p>
+    </div>
+
+    <div class="col">
+      <h3>Misi</h3>
+      <p>
+        Memberikan berita akurat, jadwal lengkap, konten kreatif,
+        dan menghubungkan komunitas fans Real Madrid seluruh Indonesia.
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Tentang Kami</h3>
+    <p>
+      MadridForID merupakan wadah fans Real Madrid Indonesia yang mengedepankan
+      kebersamaan, update informasi, dan kegiatan komunitas.
+      Kami hadir untuk menyatukan para Madridista di mana pun berada.
+    </p>
+  </div>
+
+</main>
+
+<footer>
+  © 2025 MadridForID | Fanbase Real Madrid Indonesia
+</footer>
+
+<!-- Instagram floating button -->
+<!--
+  Ubah href ke akun Instagrammu. Contoh:
+  href="https://instagram.com/USERNAME"
+-->
+<a id="igBtn" href="https://instagram.com/madridforid" target="_blank" rel="noopener noreferrer" title="Follow us on Instagram">
+  <!-- small white IG glyph (inline SVG) -->
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5z" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M17.5 6.5h.01" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</a>
+
+</body>
+</html>

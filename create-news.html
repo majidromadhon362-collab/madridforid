@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create News | MadridForID</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f4f6f8;
+      color: #001b4d;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #001b4d;
+      color: #ffd700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    header h1 {
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    .add-icon {
+      font-size: 32px;
+      background: #ffd700;
+      color: #001b4d;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .add-icon:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(5px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 99;
+    }
+
+    .overlay.show { display: flex; animation: fadeIn 0.3s ease; }
+
+    @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+
+    .form-box {
+      background: white;
+      width: 90%;
+      max-width: 450px;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+      transform: scale(0.9);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .form-box.show { transform: scale(1); opacity: 1; }
+
+    input, textarea {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    input[type="file"] { border: none; }
+
+    button {
+      width: 100%;
+      background: #001b4d;
+      color: #ffd700;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover { background: #003080; }
+
+    img {
+      margin-top: 15px;
+      max-width: 100%;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .close-btn {
+      background: #ccc;
+      color: #001b4d;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      margin-top: 10px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .close-btn:hover { background: #bbb; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📰 Create News</h1>
+    <div class="add-icon" id="addIcon">＋</div>
+  </header>
+
+  <div class="overlay" id="overlay">
+    <div class="form-box" id="formBox">
+      <input type="text" id="title" placeholder="Judul berita..." required>
+      <textarea id="summary" rows="3" placeholder="Ringkasan berita..." required></textarea>
+      <textarea id="content" rows="5" placeholder="Isi berita..." required></textarea>
+      <input type="file" id="imageInput" accept="image/*">
+      <img id="previewImage" alt="Preview Image">
+      <button id="uploadBtn">Upload & Simpan ke Firestore</button>
+      <button class="close-btn" id="closeBtn">Tutup</button>
+    </div>
+  </div>
+<script>
+  // ===== TEST FIX =====
+  function uploadAndSave() {
+    alert("✅ Fungsi uploadAndSave() berhasil jalan bro!");
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MadridForID | News</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
+
+<style>
+:root {
+  --gold: #ffd700;
+  --navy: #0b1d3a;
+  --gray: #1a2238;
+  --white: #ffffff;
+}
+
+/* RESET & BASE */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; min-height: 100%; overflow-x: hidden; }
+body {
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(180deg, #0b1d3a 0%, #09152e 100%);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+}
+
+/* MAIN */
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid var(--gold);
+  margin-bottom: 15px;
+}
+.section-header h2 { font-size: 1.4rem; font-weight: 700; color: var(--white); }
+#createNewsBtn {
+  display: none;
+  background: var(--gold);
+  color: var(--navy);
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+#createNewsBtn:hover { opacity: 0.8; }
+
+/* NEWS CARD */
+.news-card {
+  background: var(--gray);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  margin-bottom: 20px;
+  overflow: hidden;
+  position: relative;
+}
+.news-card img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+}
+.news-card h3 { font-size: 1.1rem; margin: 10px; color: var(--white); }
+.news-card p { font-size: 0.9rem; margin: 0 10px 10px; color: #ccc; }
+.read-btn {
+  background: var(--gold);
+  color: var(--navy);
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  margin: 0 10px 10px;
+  display: inline-block;
+}
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 15px 12px;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+.delete-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* FOOTER */
+footer {
+  background: var(--navy);
+  color: white;
+  text-align: center;
+  padding: 20px;
+  font-size: 0.9rem;
+  margin-top: auto;
+}
+
+/* POPUP */
+.popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(6px);
+  z-index: 999;
+}
+.popup.active { display: flex; }
+.popup form {
+  background: var(--gray);
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--white);
+}
+.popup input, .popup textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  background: #10254d;
+  color: var(--white);
+}
+#imgPreview { width: 100%; border-radius: 6px; max-height: 200px; object-fit: cover; display: none; }
+
+/* Spinner */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Confirm Modal */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+}
+.confirm-box {
+  background: var(--gray);
+  color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 320px;
+}
+.confirm-box button {
+  margin: 10px 6px 0;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.confirm-yes { background: red; color: #fff; }
+.confirm-no { background: var(--gold); color: var(--navy); }
+</style>
+</head>
+
+<body>
+<div id="include-header"></div>
+<script>
+(async()=>{
+  const res = await fetch("header.html?cb=" + Date.now());
+  const html = await res.text();
+  const container = document.getElementById("include-header");
+  container.innerHTML = html;
+
+  // ⛽️ Jalankan ulang semua <script> di dalam header.html
+  container.querySelectorAll("script").forEach((oldScript)=>{
+    const newScript=document.createElement("script");
+    if(oldScript.type)newScript.type=oldScript.type;
+    if(oldScript.src)newScript.src=oldScript.src;
+    else newScript.textContent=oldScript.textContent;
+    document.body.appendChild(newScript);
+  });
+})();
+</script>
+
+<main>
+  <div class="section-header">
+    <h2>📰 Latest News</h2>
+    <button id="createNewsBtn">➕ Create News</button>
+  </div>
+  <div id="newsContainer"></div>
+</main>
+
+<footer>© 2025 MadridForID | Real Madrid Indonesia Fanbase</footer>
+
+<!-- POPUP CREATE -->
+<div class="popup" id="popupForm">
+  <form id="createForm">
+    <h3>Create News</h3>
+    <input type="text" id="title" placeholder="Title" required>
+    <textarea id="summary" rows="2" placeholder="Summary" required></textarea>
+    <textarea id="content" rows="4" placeholder="Content" required></textarea>
+    <input type="file" id="imageFile" accept="image/*" required>
+    <img id="imgPreview" src="">
+    <button id="uploadBtn" type="submit">Upload & Save</button>
+  </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
+  authDomain: "madridforid-web.firebaseapp.com",
+  projectId: "madridforid-web",
+  storageBucket: "madridforid-web.appspot.com",
+  messagingSenderId: "882098167537",
+  appId: "1:882098167537:web:acf50819e9c81adaad1350"
+};
+const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
+const IMGBB_API_KEY = "c438ddf1b0de692e084414e335436ec6";
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const createBtn = document.getElementById("createNewsBtn");
+const popup = document.getElementById("popupForm");
+const form = document.getElementById("createForm");
+const fileInput = document.getElementById("imageFile");
+const imgPreview = document.getElementById("imgPreview");
+const uploadBtn = document.getElementById("uploadBtn");
+const newsContainer = document.getElementById("newsContainer");
+let currentUser = null, cropper = null;
+
+onAuthStateChanged(auth, (user) => {
+  currentUser = user;
+  createBtn.style.display = (user && user.uid === ADMIN_UID) ? "block" : "none";
+  loadNews(); // 🔥 hanya load sekali tiap login
+});
+
+fileInput.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    imgPreview.src = reader.result;
+    imgPreview.style.display = "block";
+    if (cropper) cropper.destroy();
+    cropper = new Cropper(imgPreview, {
+      aspectRatio: 16/9,
+      viewMode: 2,
+      dragMode: "none",
+      zoomable: false,
+      movable: false,
+      scalable: false,
+      cropBoxResizable: true
+    });
+  };
+  reader.readAsDataURL(file);
+});
+
+createBtn.addEventListener("click", () => popup.classList.add("active"));
+popup.addEventListener("click", (e) => { if (e.target === popup) popup.classList.remove("active"); });
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!currentUser || currentUser.uid !== ADMIN_UID) return alert("❌ Only admin can post news!");
+
+  uploadBtn.disabled = true;
+  uploadBtn.innerHTML = `<div class="spinner"></div> Uploading...`;
+
+  cropper.getCroppedCanvas({ width: 900, height: 506 }).toBlob(async (blob) => {
+    const fd = new FormData(); fd.append("image", blob);
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: fd });
+    const data = await res.json();
+    const imageURL = data.data.url;
+    await addDoc(collection(db, "news"), {
+      title: title.value,
+      summary: summary.value,
+      content: content.value,
+      image: imageURL,
+      likes: 0,
+      comments: [],
+      createdAt: serverTimestamp()
+    });
+    alert("✅ News added!");
+    uploadBtn.disabled = false;
+    uploadBtn.innerHTML = "Upload & Save";
+    popup.classList.remove("active");
+    form.reset();
+    imgPreview.style.display = "none";
+  });
+});
+
+function confirmDelete(onYes) {
+  const overlay = document.createElement("div");
+  overlay.className = "confirm-overlay";
+  overlay.innerHTML = `
+    <div class="confirm-box">
+      <p>Delete this news?</p>
+      <button class="confirm-yes">Yes</button>
+      <button class="confirm-no">No</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector(".confirm-no").onclick = () => overlay.remove();
+  overlay.querySelector(".confirm-yes").onclick = () => { onYes(); overlay.remove(); };
+}
+
+async function loadNews() {
+  const q = query(collection(db, "news"), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  newsContainer.innerHTML = "";
+  snap.forEach((docSnap) => {
+    const d = docSnap.data();
+    const isAdmin = currentUser && currentUser.uid === ADMIN_UID;
+    const card = document.createElement("div");
+    card.className = "news-card";
+    card.innerHTML = `
+      <img src="${d.image}">
+      <h3>${d.title}</h3>
+      <p>${d.summary}</p>
+      <a href="news-detail.html?id=${docSnap.id}" class="read-btn">Read More</a>
+      <div class="card-footer">
+        <span>💬 ${(d.comments?.length) || 0}</span>
+        <span>❤️ ${(d.likes) || 0}</span>
+      </div>
+      ${isAdmin ? `<button class="delete-btn" data-id="${docSnap.id}">🗑️</button>` : ""}
+    `;
+    if (isAdmin) {
+      card.querySelector(".delete-btn").onclick = () => {
+        confirmDelete(async () => { await deleteDoc(doc(db, "news", docSnap.id)); });
+      };
+    }
+    newsContainer.appendChild(card);
+  });
+}
+</script>
+</body>
+</html>

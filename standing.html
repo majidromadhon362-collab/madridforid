@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Standings | MadridForID</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="https://i.postimg.cc/J0krHM4b/1000089950-removebg-preview-2.png">
+
+<style>
+:root {
+  --gold:#ffd700;
+  --navy:#0b1d3a;
+  --navy-soft:#09152e;
+  --gray:#1a2238;
+  --white:#ffffff;
+  --muted:#c8c8d0;
+  --radius:12px;
+}
+
+/* RESET */
+*{margin:0;padding:0;box-sizing:border-box}
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(180deg, #0b1d3a 0%, #09152e 100%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+.container{
+  max-width:950px;
+  margin:0 auto;
+  padding:20px;
+}
+
+/* TITLE AREA */
+.page-title{
+  font-size:1.5rem;
+  font-weight:700;
+  margin-bottom:14px;
+}
+
+/* SELECT LEAGUE BUTTON */
+.league-btn{
+  background:var(--gold);
+  border:0;
+  color:#000;
+  font-weight:700;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+/* TABLE */
+.table-wrap{
+  background:rgba(255,255,255,0.05);
+  padding:14px;
+  border-radius:12px;
+  overflow:hidden;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+thead th{
+  padding:10px;
+  background:rgba(255,255,255,0.08);
+}
+tbody td{
+  padding:10px;
+  text-align:center;
+  color:var(--muted);
+}
+tbody tr:nth-child(even){
+  background:rgba(255,255,255,0.04);
+}
+tbody td.team{
+  text-align:left;
+  color:var(--white);
+}
+
+/* VIEW ALL */
+#toggleTable{
+  margin-top:12px;
+  width:100%;
+  padding:8px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.2);
+  background:transparent;
+  color:var(--gold);
+  cursor:pointer;
+}
+
+/* LEAGUE PICKER MODAL */
+.modal-bg{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:2000;
+}
+.modal-bg.show{display:flex}
+
+.modal{
+  background:#fff;
+  color:#000;
+  width:90%;
+  max-width:420px;
+  padding:20px;
+  border-radius:12px;
+}
+.opt{
+  padding:14px;
+  background:#eee;
+  border-radius:8px;
+  font-weight:600;
+  cursor:pointer;
+  text-align:center;
+  margin-top:10px;
+}
+.opt:hover{
+  background:var(--gold);
+  color:#000;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER INCLUDE -->
+<div id="include-header"></div>
+
+<div class="container">
+
+  <h2 class="page-title">League Standings</h2>
+
+  <button id="chooseLeague" class="league-btn">Choose League</button>
+  <small id="lastUpdated" style="margin-left:10px;color:var(--muted)">Last updated: —</small>
+
+  <div class="table-wrap" style="margin-top:18px;">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th style="text-align:left">Team</th>
+          <th>P</th>
+          <th>GD</th>
+          <th>Pts</th>
+        </tr>
+      </thead>
+
+      <tbody id="standBody"></tbody>
+    </table>
+  </div>
+
+  <button id="toggleTable">Show All</button>
+
+</div>
+
+<!-- LEAGUE PICKER -->
+<div id="leagueModal" class="modal-bg">
+  <div class="modal">
+      <strong>Select League</strong>
+      <div class="opt" data-league="laliga">🇪🇸 La Liga</div>
+      <div class="opt" data-league="ucl">⭐ Champions League</div>
+      <div class="opt" data-league="copa">🏆 Copa del Rey</div>
+  </div>
+</div>
+
+<script type="module" src="global.js"></script>
+
+<script type="module">
+import { db } from "./global.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+const tbody = document.getElementById("standBody");
+const toggleTable = document.getElementById("toggleTable");
+const chooseLeague = document.getElementById("chooseLeague");
+const leagueModal = document.getElementById("leagueModal");
+const lastUpdated = document.getElementById("lastUpdated");
+
+let fullRows = [];
+let showingAll = false;
+let currentLeague = "laliga";
+
+/* LOAD STANDINGS */
+async function loadStandings(league){
+  try {
+    const ref = doc(db, "standings", league);
+    const snap = await getDoc(ref);
+
+    if(!snap.exists()){
+      tbody.innerHTML = `<tr><td colspan="5">No Data Available</td></tr>`;
+      return;
+    }
+
+    const data = snap.data();
+    fullRows = data.rows || [];
+
+    // default = top 5
+    renderRows(fullRows.slice(0,5));
+
+    lastUpdated.textContent = 
+      "Last updated: " + new Date(data.updatedAt).toLocaleString();
+
+    showingAll = false;
+    toggleTable.textContent = "Show All";
+
+  } catch (e){
+    tbody.innerHTML = `<tr><td colspan="5">Failed loading...</td></tr>`;
+    console.error(e);
+  }
+}
+
+function renderRows(rows){
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.pos}</td>
+      <td class="team">${r.team}</td>
+      <td>${r.played}</td>
+      <td>${r.gd}</td>
+      <td>${r.pts}</td>
+    </tr>
+  `).join("");
+}
+
+/* TOGGLE TABLE */
+toggleTable.onclick = ()=>{
+  if(showingAll){
+    renderRows(fullRows.slice(0,5));
+    toggleTable.textContent = "Show All";
+    showingAll = false;
+  } else {
+    renderRows(fullRows);
+    toggleTable.textContent = "Show Less";
+    showingAll = true;
+  }
+};
+
+/* OPEN MODAL */
+chooseLeague.onclick = ()=> leagueModal.classList.add("show");
+/* CLOSE MODAL WHEN CLICK OUTSIDE */
+leagueModal.onclick = e=>{
+  if(e.target === leagueModal) leagueModal.classList.remove("show");
+};
+/* SELECT LEAGUE */
+document.querySelectorAll(".opt").forEach(btn=>{
+  btn.onclick = ()=>{
+    currentLeague = btn.dataset.league;
+    leagueModal.classList.remove("show");
+    loadStandings(currentLeague);
+  };
+});
+
+/* INITIAL LOAD */
+window.addEventListener("header-ready", ()=> loadStandings(currentLeague));
+
+</script>
+
+</body>
+</html>
