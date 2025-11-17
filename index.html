@@ -1,396 +1,392 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>MadridForID | Home</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="https://i.postimg.cc/J0krHM4b/1000089950-removebg-preview-2.png">
 
-<!-- CropperJS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
-
 <style>
-/* ========================================================= */
-/* ROOT COLORS */
 :root {
-  --gold: #ffd700;
-  --navy: #0b1d3a;
-  --navy-soft: #10254d;
-  --gray: #1a2238;
-  --white: #ffffff;
-  --red: #e63946;
+  --gold:#FFD700;
+  --navy:#0b1d3a;
+  --navy-soft:#10254d;
+  --gray:#1a2238;
+  --white:#ffffff;
+  --red:#e63946;
 }
 
-/* ========================================================= */
-/* BASIC RESET */
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden !important;
-  width: 100%;
-  max-width: 100vw;
-  box-sizing: border-box;
-  height: 100%;
+/* RESET */
+html,body{
+  margin:0;padding:0;overflow-x:hidden;
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(180deg,#0b1d3a,#09152e);
+  color:var(--white);
 }
-*, *::before, *::after {
-  box-sizing: inherit;
+.container{max-width:1200px;margin:auto;padding:20px;}
+
+/* ---------- HERO INTRO ---------- */
+.hero-card{
+  background:var(--gray);
+  padding:18px;
+  border-radius:14px;
+  box-shadow:0 6px 16px rgba(0,0,0,.35);
+}
+.hero-card h1{font-size:1.8rem;font-weight:800;margin-bottom:6px;}
+.hero-card p{color:#c8c8d0;margin-bottom:14px;font-size:.95rem;}
+
+.hero-btn-row{
+  display:flex;align-items:center;gap:18px;
+}
+.btn-gold{
+  background:var(--gold);color:#000;font-weight:700;
+  padding:8px 16px;border-radius:8px;text-decoration:none;
+}
+.explore-link{
+  color:#fff;font-size:1rem;font-weight:600;text-decoration:none;opacity:.85;
 }
 
-body {
-  font-family: "Poppins", sans-serif;
-  background: linear-gradient(180deg, #0b1d3a 0%, #09152e 100%);
-  color: var(--white);
+/* ---------- HERO SLIDESHOW ---------- */
+.hero-slideshow{
+  width:100%;margin-top:14px;
+  border-radius:14px;overflow:hidden;
+  aspect-ratio:16/9;background:#0a1222;
+  position:relative;
 }
-
-.btn-readmore {
-  background: #FFD700;
-  color: #000;
-  padding: 7px 12px;
-  border-radius: 7px;
-  font-weight: 700;
-  text-decoration: none;
-  display: inline-block;
-  margin-top: 8px;
-}
-
-/* ========================================================= */
-/* CONTAINER */
-.container {
-  width: 100%;
-  max-width: 1200px;
-  margin: auto;
-  padding: 20px;
-}
-
-/* ========================================================= */
-/* HERO SECTION */
-.hero-section {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 30px;
-  margin: 20px 0;
-  flex-wrap: wrap;
-}
-
-.hero-text {
-  flex: 1;
-  min-width: 280px;
-}
-.hero-text .card {
-  background: var(--gray);
-  border-radius: 12px;
-  padding: 16px;
-}
-.hero-text h1 {
-  font-size: 1.8rem;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-.hero-text p {
-  color: #c8c8d0;
-  font-size: 1rem;
-  margin-bottom: 16px;
-}
-.hero-buttons {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-.hero-buttons a {
-  text-decoration: none;
-  font-weight: 600;
-}
-.btn-gold {
-  background: var(--gold);
-  color: #000;
-  padding: 8px 16px;
-  border-radius: 8px;
-}
-.btn-plain {
-  color: var(--white);
-}
-
-/* HERO SLIDESHOW */
-.hero-slideshow {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
-  aspect-ratio: 16/9;
-  min-width: 280px;
-}
-.hero-slideshow img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  position: absolute;
-  opacity: 0;
-  transform: scale(1.08);
-  transition: opacity 1s ease, transform 3s ease;
-}
-.hero-slideshow img.active {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* ADMIN HERO BUTTON */
-.edit-hero-btn {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: rgba(0,0,0,0.6);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-weight: 600;
-  cursor: pointer;
-  z-index: 20;
-  display: none;
-}
-
-.slide-delete-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: var(--red);
-  border: none;
-  color: #fff;
-  padding: 6px 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  z-index: 20;
-  display: none;
-}
-
-.hero-slide-wrap {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-/* ========================================================= */
-/* SECTION HEADER */
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 40px 0 20px;
-}
-.section-header h2 {
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-.section-header a {
-  color: var(--white);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-/* ========================================================= */
-/* HORIZONTAL SCROLL LIST */
-.h-scroll {
-  display: flex;
-  gap: 16px;
-  overflow-x: auto;
-  padding-bottom: 10px;
-  scroll-behavior: smooth;
-}
-.h-scroll::-webkit-scrollbar { display: none; }
-
-.card {
-  flex: 0 0 280px;
-  background: var(--gray);
-  border-radius: 12px;
-  padding: 12px;
-  color: var(--white);
-  position: relative;
-}
-.card img {
-  width: 100%;
-  height: 150px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-/* EDIT SCORE BTN */
-.editScoreBtn {
-  display: none;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: var(--gold);
-  color: #000;
-  border: none;
-  padding: 5px 7px;
-  font-size: 12px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-/* FOOTER */
-footer {
-  background: var(--navy);
-  color: var(--white);
-  text-align: center;
-  padding: 20px;
-}
-
-/* ========================================================= */
-/* HERO MODAL */
-.modal-hero {
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.7);
-  justify-content:center;
-  align-items:center;
-  z-index:9999;
-}
-.modal-hero .modal-box {
-  background:#fff;
-  padding:16px;
-  border-radius:12px;
-  width:95%;
-  max-width:860px;
-  color:#000;
-}
-
-.hero-img {
-  opacity: 0;
-  transition: opacity 1.5s ease;
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
+.slide{
+  position:absolute;inset:0;
+  width:100%;height:100%;
   object-fit:cover;
+  opacity:0;transform:scale(1.08);
+  transition:opacity 1.1s ease,transform 3s ease;
 }
-.hero-img.active {
-  opacity: 1;
-}
-
-/* READ MORE GOLD BUTTON */
-.btn-readmore {
-  display: inline-block;
-  background: #ffd700;
-  color: #000;
-  padding: 8px 14px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: 0.25s ease;
-  margin-top: 8px;
+.slide.active{opacity:1;transform:scale(1)}
+#editHeroBtn{
+  position:absolute;top:12px;left:12px;
+  padding:6px 10px;border-radius:8px;border:none;
+  background:rgba(0,0,0,.6);
+  color:#fff;font-weight:700;cursor:pointer;z-index:20;
+  display:none;
 }
 
-.btn-readmore:hover {
-  background: #ffe44c;
-  transform: translateY(-1px);
+/* ---------- SECTION HEADER ---------- */
+.section-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:32px;margin-bottom:14px;
+}
+.section-header h2{font-size:1.15rem;font-weight:700;}
+.section-header a{
+  text-decoration:none;font-weight:700;font-size:.9rem;
+  color:var(--gold);
 }
 
+/* ---------- SCROLL LIST ---------- */
+.h-scroll{
+  display:flex;gap:16px;overflow-x:auto;padding-bottom:10px;
+}
+.h-scroll::-webkit-scrollbar{display:none;}
+
+.card{
+  background:var(--gray);
+  min-width:260px;
+  border-radius:14px;
+  padding:12px;
+  position:relative;
+  box-shadow:0 6px 16px rgba(0,0,0,.35);
+}
+.card img{
+  width:100%;
+  aspect-ratio:16/9;
+  border-radius:10px;
+  object-fit:cover;
+  margin-bottom:6px;
+}
+.btn-readmore{
+  background:var(--gold);color:#000;padding:6px 12px;
+  border-radius:8px;font-weight:700;font-size:.85rem;text-decoration:none;
+}
+.editScoreBtn{
+  display:none;position:absolute;top:10px;right:10px;
+  background:var(--gold);color:#000;border:none;
+  padding:6px 8px;border-radius:6px;font-size:.7rem;cursor:pointer;
+}
+
+/* ---------- BADGES ---------- */
+.upcoming-badge{
+  background:var(--gold);color:#000;
+  font-weight:700;font-size:.75rem;
+  padding:4px 10px;border-radius:6px;
+  display:inline-block;margin-bottom:6px;
+}
+.live-badge{
+  background:#e63946;color:#fff;
+  font-weight:700;font-size:.75rem;
+  padding:4px 10px;border-radius:6px;
+  display:inline-block;margin-bottom:6px;
+}
+.countdown{
+  font-weight:700;
+  color:var(--gold);
+  margin:6px 0 10px;
+}
+
+/* ---------- FOOTER ---------- */
+footer{
+  background:var(--navy);
+  padding:20px;text-align:center;margin-top:40px;
+}
 </style>
 </head>
 
 <body>
 
-<!-- HEADER (loaded via global.js) -->
+<!-- HEADER -->
 <div id="include-header"></div>
+<script>
+(async()=>{
+  const box=document.getElementById("include-header");
+  const html=await (await fetch("header.html?cb="+Date.now())).text();
+  box.innerHTML=html;
+
+  box.querySelectorAll("script").forEach(s=>{
+    const ns=document.createElement("script");
+    if(s.src)ns.src=s.src; else ns.textContent=s.textContent;
+    ns.type=s.type || "module";
+    document.body.appendChild(ns);
+  });
+})();
+</script>
 
 <main class="container">
 
-  <!-- ================= HERO ================= -->
-  <section class="hero-section">
-    <div class="hero-text">
-      <div class="card">
-        <h1>Welcome to MadridForID</h1>
-        <p>The digital community for Real Madrid fans in Indonesia — news, fixtures, standings, and more.</p>
+<!-- HERO -->
+<div class="hero-card">
+  <h1>Welcome to MadridForID</h1>
+  <p>The digital community for Real Madrid fans in Indonesia — news, fixtures, standings, and more.</p>
 
-        <div class="hero-buttons">
-          <a href="news.html" class="btn-gold">View News</a>
-          <a href="#" class="btn-plain">Explore</a>
-        </div>
-      </div>
-    </div>
+  <div class="hero-btn-row">
+    <a href="news.html" class="btn-gold">View News</a>
+    <a href="#" class="explore-link">Explore</a>
+  </div>
 
-    <div class="hero-slideshow" id="heroSlideshow">
-      <button id="editHeroBtn" class="edit-hero-btn">✎ Edit Hero</button>
-    </div>
-  </section>
+  <div class="hero-slideshow" id="heroWrap">
+    <button id="editHeroBtn">✎ Edit Hero</button>
+  </div>
+</div>
 
+<!-- RECENT RESULTS -->
+<div class="section-header">
+  <h2>⚽ Recent Results</h2>
+</div>
+<div id="recentBox" class="h-scroll"></div>
 
-  <!-- ================= RECENT RESULTS ================= -->
-  <div class="section-header"><h2>⚽ Recent Results</h2></div>
-  <div class="h-scroll" id="resultScroll"></div>
+<!-- NEWS -->
+<div class="section-header">
+  <h2>📰 Latest News</h2>
+  <a href="news.html">View all</a>
+</div>
+<div id="newsBox" class="h-scroll"></div>
 
-  <!-- ================= LATEST NEWS ================= -->
-  <div class="section-header"><h2>📰 Latest News</h2><a href="news.html">View all</a></div>
-  <div class="h-scroll" id="newsScroll"></div>
+<!-- UPCOMING -->
+<div class="section-header">
+  <h2>📅 Upcoming Matches</h2>
+  <a href="schedule.html">View all</a>
+</div>
+<div id="upcomingBox" class="h-scroll"></div>
 
-  <!-- ================= UPCOMING MATCHES ================= -->
-  <div class="section-header"><h2>📅 Upcoming Matches</h2><a href="schedule.html">View all</a></div>
-  <div class="h-scroll" id="upcomingScroll"></div>
-
-  <!-- ================= GALLERY ================= -->
-  <div class="section-header"><h2>📸 Gallery</h2><a href="gallery.html">View all</a></div>
-  <div class="h-scroll" id="galleryGrid"></div>
+<!-- GALLERY -->
+<div class="section-header">
+  <h2>📸 Gallery</h2>
+  <a href="gallery.html">View all</a>
+</div>
+<div id="galleryBox" class="h-scroll"></div>
 
 </main>
 
-<footer>
-  © 2025 MadridForID | Real Madrid Indonesia Fanbase
-</footer>
+<footer>© 2025 MadridForID | Real Madrid Indonesia Fanbase</footer>
 
-<!-- ========================================================= -->
-<!-- HERO MODAL -->
-<div id="heroModal" class="modal-hero" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;">
-  <div style="background:white;padding:20px;border-radius:12px;width:90%;max-width:500px;color:#000;">
-    <h3>Edit Hero Slides</h3>
-
-    <label>Slide 1:</label>
-    <input type="file" id="hero1"><br><br>
-
-    <label>Slide 2:</label>
-    <input type="file" id="hero2"><br><br>
-
-    <label>Slide 3:</label>
-    <input type="file" id="hero3"><br><br>
-
-    <button id="saveHeroBtn" style="padding:10px 15px;background:#2563eb;color:#fff;border:none;border-radius:8px;">Save Slides</button>
-    <button id="heroCloseBtn" style="padding:10px 15px;margin-left:10px;">Cancel</button>
-  </div>
-</div>
-
-    <div style="margin-top:12px;text-align:center;">
-      <img id="heroPreview" src="" style="display:none;max-width:100%;border-radius:8px;">
-    </div>
-
-  </div>
-</div>
-
-
-<!-- ========================================================= -->
-<!-- SCRIPTS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-<script type="module" src="global.js"></script>
-
+<!-- MAIN JS -->
 <script type="module">
-  import { db, loadHeroSafe, loadAllSafe } from "./global.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, collection, doc, getDocs, getDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-  window.addEventListener("header-ready", () => {
-    loadHeroSafe(db);
-    loadAllSafe(db);
+const ADMIN_UID="T9MBugPPYLQ4HVu6uLBV3kEck3C2";
+
+const firebaseConfig={
+  apiKey:"AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
+  authDomain:"madridforid-web.firebaseapp.com",
+  projectId:"madridforid-web",
+  storageBucket:"madridforid-web.appspot.com",
+  messagingSenderId:"882098167537",
+  appId:"1:882098167537:web:acf50819e9c81adaad1350"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+const auth=getAuth(app);
+
+/* ============= HERO ============= */
+async function loadHero(){
+  const wrap=document.getElementById("heroWrap");
+  wrap.innerHTML=`<button id="editHeroBtn" style="display:none;">✎ Edit Hero</button>`;
+  
+  const snap=await getDocs(collection(db,"home_hero"));
+  const urls=[];
+  snap.forEach(d=>{ if(d.data().url) urls.push(d.data().url) });
+
+  if(!urls.length){
+    wrap.innerHTML+="<p style='padding:20px;color:#bbb'>No slides yet</p>";
+    return;
+  }
+
+  urls.forEach(url=>{
+    const img=document.createElement("img");
+    img.className="slide";
+    img.src=url;
+    wrap.appendChild(img);
   });
 
-  window.addEventListener("DOMContentLoaded", () => {
-    setTimeout(() => {
-      if (!document.querySelector("#heroSlideshow img")) loadHeroSafe(db);
-      if (!document.getElementById("newsScroll").children.length) loadAllSafe(db);
-    }, 600);
+  const slides=wrap.querySelectorAll(".slide");
+  let i=0;
+  slides[i].classList.add("active");
+
+  setInterval(()=>{
+    slides[i].classList.remove("active");
+    i=(i+1)%slides.length;
+    slides[i].classList.add("active");
+  },4000);
+}
+
+/* ============= NEWS ============= */
+async function loadNews(){
+  const box=document.getElementById("newsBox");
+  const q=query(collection(db,"news"),orderBy("createdAt","desc"),limit(8));
+  const snap=await getDocs(q);
+
+  box.innerHTML="";
+  snap.forEach(doc=>{
+    const d=doc.data();
+    box.innerHTML+=`
+      <div class="card">
+        <img src="${d.image}">
+        <h4 style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.title}</h4>
+        <a class="btn-readmore" href="news-detail.html?id=${doc.id}">Read More</a>
+      </div>
+    `;
   });
+}
+
+/* ============= RECENT RESULTS ============= */
+async function loadResults(){
+  const box=document.getElementById("recentBox");
+  const q=query(collection(db,"schedule"),orderBy("datetime","desc"),limit(40));
+  const snap=await getDocs(q);
+
+  const now=Date.now();
+  box.innerHTML="";
+
+  snap.forEach(doc=>{
+    const d=doc.data();
+    const dt=new Date(d.datetime).getTime();
+
+    if(now > dt + (2*60*60*1000)){
+      box.innerHTML+=`
+        <div class="card">
+          <img src="${d.flyerUrl}">
+          <h4 style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.match}</h4>
+          <small>${new Date(dt).toLocaleString("id-ID")}</small>
+          <div style="font-weight:700;color:var(--gold);margin:6px 0">${d.score || "- : -"}</div>
+          <button class="editScoreBtn" data-id="${doc.id}">Edit</button>
+        </div>
+      `;
+    }
+  });
+
+  onAuthStateChanged(auth,u=>{
+    const isAdmin=u && u.uid===ADMIN_UID;
+    document.querySelectorAll(".editScoreBtn").forEach(b=> b.style.display=isAdmin?"block":"none");
+  });
+}
+
+/* ============= UPCOMING (WITH LIVE BADGE) ============= */
+async function loadUpcoming(){
+  const box=document.getElementById("upcomingBox");
+  const q=query(collection(db,"schedule"),orderBy("datetime","asc"),limit(40));
+  const snap=await getDocs(q);
+
+  const now=Date.now();
+  box.innerHTML="";
+
+  snap.forEach(doc=>{
+    const d=doc.data();
+    const dt=new Date(d.datetime).getTime();
+
+    const start=dt;
+    const end=dt+(2*60*60*1000); // 2 jam live
+
+    let badge="";
+    if(now < start){
+      badge = `<span class="upcoming-badge">UPCOMING</span>`;
+    } else if(now >= start && now <= end){
+      badge = `<span class="live-badge">LIVE</span>`;
+    } else {
+      return; // jangan masuk upcoming
+    }
+
+    const diff=dt-now;
+    const days=Math.floor(diff/86400000);
+    const hrs=Math.floor((diff%86400000)/3600000);
+    const mins=Math.floor((diff%3600000)/60000);
+
+    const countdown = now < start
+      ? `⏳ ${days}D ${hrs}H ${mins}M`
+      : `🔴 LIVE NOW`;
+
+    box.innerHTML+=`
+      <div class="card">
+        ${badge}
+        <img src="${d.flyerUrl}">
+        <h4 style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.match}</h4>
+
+        <small>🏟 ${d.stadium}</small><br>
+        <small>${new Date(dt).toLocaleDateString("id-ID")} • 
+        ${new Date(dt).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})}</small>
+
+        <div class="countdown">${countdown}</div>
+
+        <a class="btn-readmore" href="schedule-detail.html?id=${doc.id}">Read More</a>
+      </div>
+    `;
+  });
+}
+
+/* ============= GALLERY ============= */
+async function loadGallery(){
+  const box=document.getElementById("galleryBox");
+  const q=query(collection(db,"gallery"),orderBy("createdAt","desc"),limit(12));
+  const snap=await getDocs(q);
+
+  box.innerHTML="";
+  snap.forEach(doc=>{
+    const d=doc.data();
+    box.innerHTML+=`
+      <div class="card">
+        <img src="${d.imageUrl}">
+      </div>
+    `;
+  });
+}
+
+/* INIT LOAD */
+loadHero();
+loadNews();
+loadResults();
+loadUpcoming();
+loadGallery();
+
 </script>
 
 </body>

@@ -1,4 +1,3 @@
-<!-- SCHEDULE.HTML — PART 1/3 (Head + CSS + top body) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +6,6 @@
   <title>MadridForID | Schedule</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <!-- Cropper CSS (needed for flyer crop) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
 
   <style>
@@ -22,23 +20,6 @@
       --danger:#e63946;
       --radius:12px;
     }
-    
-    /* Spinner untuk tombol Save */
-.spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid #fff;
-  border-top-color: transparent;
-  border-radius: 50%;
-  display: inline-block;
-  animation: spin .7s linear infinite;
-  vertical-align: middle;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%;width:100%;font-family:"Poppins",sans-serif;background:linear-gradient(180deg,var(--bg-grad-start),var(--bg-grad-end));color:#fff}
     body{display:flex;flex-direction:column;min-height:100vh}
@@ -80,12 +61,8 @@
     .status-finished{background:#444;color:#fff}
     @keyframes blink{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
 
-    /* delete button on cards (admin only) */
-    .card .delete-btn{
-      position:absolute;right:12px;top:46px;background:var(--danger);color:#fff;border:0;padding:6px 8px;border-radius:8px;cursor:pointer;display:none;z-index:25;
-    }
+    .card .delete-btn{position:absolute;right:12px;top:46px;background:var(--danger);color:#fff;border:0;padding:6px 8px;border-radius:8px;cursor:pointer;display:none;z-index:25}
 
-    /* small helpers */
     .kicker{color:var(--muted);font-size:0.95rem}
     .empty{color:#ddd;padding:18px;background:rgba(255,255,255,0.02);border-radius:10px;text-align:center}
 
@@ -104,22 +81,16 @@
     .form-group input,.form-group textarea,.form-group select{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd}
     #matchPreview{max-width:100%;border-radius:10px;display:none;margin-top:8px}
 
-    /* hero modal references safety (if exists) */
-    .hero-modal{display:none}
-
-    /* spinner */
-    @keyframes spin{to{transform:rotate(360deg)}}
     .spinner-inline{display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;vertical-align:middle;animation:spin .8s linear infinite;margin-right:8px}
+    @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* responsive */
-    @media(max-width:700px){
-      .top-row{flex-direction:column;align-items:flex-start}
-    }
+    footer{background:var(--navy);text-align:center;padding:18px;margin-top:auto}
+    @media(max-width:700px){.top-row{flex-direction:column;align-items:flex-start}}
   </style>
 </head>
 <body>
 
-  <!-- header (loaded by global.js) -->
+  <!-- HEADER (we inject header.html but strip module scripts and wire locally) -->
   <div id="include-header"></div>
 
   <main>
@@ -137,11 +108,10 @@
 
     <div id="infoArea" class="kicker" style="margin-bottom:12px">Loading schedule...</div>
 
-    <!-- GRID placeholder (will be rendered by JS) -->
     <div id="grid" class="grid"></div>
 
     <div id="emptyState" class="empty" style="display:none;margin-top:12px">No matches found for this category.</div>
-    
+
     <!-- Picker Modal -->
     <div id="pickerBack" class="picker-back">
       <div class="picker">
@@ -160,9 +130,9 @@
       </div>
     </div>
 
-    <!-- Admin Add Match Modal -->
+    <!-- Add Match Modal -->
     <div id="addModal" class="add-modal" aria-hidden="true">
-      <div class="form-card">
+      <div class="form-card" role="dialog" aria-modal="true">
         <h3>Add Schedule (Admin)</h3>
 
         <div class="form-group">
@@ -171,7 +141,7 @@
         </div>
 
         <div class="form-group">
-          <label>Datetime (yyyy-mm-dd hh:mm)</label>
+          <label>Datetime (local)</label>
           <input id="fmDatetime" type="datetime-local">
         </div>
 
@@ -179,11 +149,11 @@
           <label>Stadium</label>
           <input id="fmStadium" placeholder="Stadium">
         </div>
-        
+
         <div class="form-group">
-  <label>Article (opsional)</label>
-  <textarea id="fmArticle" rows="6" placeholder="Write match article here..."></textarea>
-</div>
+          <label>Article (optional)</label>
+          <textarea id="fmArticle" rows="4" placeholder="Write match article here..."></textarea>
+        </div>
 
         <div class="form-group">
           <label>Category</label>
@@ -197,396 +167,360 @@
           </select>
         </div>
 
-        <!-- Flyer upload -->
         <div class="form-group">
-          <label>Upload Flyer (16:9)</label>
+          <label>Upload Flyer (optional, will be uploaded to IMGBB)</label>
           <input id="fmFlyerFile" type="file" accept="image/*">
-          <img id="matchPreview" />
+          <img id="matchPreview" alt="preview">
         </div>
 
         <div style="display:flex;gap:8px;justify-content:flex-end;">
           <button id="saveMatchBtn" class="btn">Save</button>
           <button id="cancelAddBtn" class="btn ghost">Cancel</button>
         </div>
-
       </div>
     </div>
 
   </main>
 
-  <!-- CropperJS -->
+  <footer>
+    © 2025 MadridForID | Real Madrid Indonesia Fanbase
+  </footer>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
-  <!-- Firestore + Main Logic -->
   <script type="module">
-    import { 
-      db, auth 
-    } from "./global.js";
-
-    import {
-      collection, query, orderBy, getDocs, addDoc,
-      deleteDoc, doc, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
-    import {
-      onAuthStateChanged 
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    
-    // ==========================
-    // CONFIG & DOM
-    // ==========================
+    /***** CONFIG *****/
+    const IMGBB_API_KEY = "c438ddf1b0de692e084414e335436ec6"; // your imgbb
     const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
 
+    /***** FIREBASE INIT (local to this page) *****/
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import {
+      getFirestore, collection, query, orderBy, getDocs, addDoc, deleteDoc,
+      doc, serverTimestamp, getDoc
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
+      authDomain: "madridforid-web.firebaseapp.com",
+      projectId: "madridforid-web",
+      storageBucket: "madridforid-web.appspot.com",
+      messagingSenderId: "882098167537",
+      appId: "1:882098167537:web:acf50819e9c81adaad1350"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    /***** HEADER INJECTION + WIRING (strip scripts to avoid duplicate init) *****/
+    (async function injectHeader(){
+      try{
+        const target = document.getElementById("include-header");
+        const res = await fetch("header.html?cb="+Date.now());
+        if(!res.ok){ target.innerHTML = ""; window.dispatchEvent(new Event("header-ready")); return; }
+        const html = await res.text();
+
+        const tmp = document.createElement("div");
+        tmp.innerHTML = html;
+
+        // remove script tags (so header's module won't re-init firebase)
+        tmp.querySelectorAll("script").forEach(s=>s.remove());
+        target.innerHTML = tmp.innerHTML;
+
+        // wire burger + sign btn locally
+        const burger = document.getElementById("burgerBtn");
+        const mobile = document.getElementById("mobileDropdown");
+        const signBtn = document.getElementById("signBtn");
+        const signText = document.getElementById("signText");
+        const avatarImg = document.getElementById("avatarImg");
+
+        burger?.addEventListener("click", ()=> mobile.classList.toggle("show"));
+        document.addEventListener("click", (e)=> {
+          if (!mobile) return;
+          if (!mobile.contains(e.target) && !burger.contains(e.target)) mobile.classList.remove("show");
+        });
+
+        // sign in/out handling
+        signBtn?.addEventListener("click", async ()=>{
+          if(auth.currentUser) await signOut(auth);
+          else await signInWithPopup(auth, provider);
+        });
+
+        // ready
+        window.dispatchEvent(new Event("header-ready"));
+      }catch(err){
+        console.error("header inject err", err);
+        window.dispatchEvent(new Event("header-ready"));
+      }
+    })();
+
+    /***** DOM refs *****/
     const grid = document.getElementById("grid");
     const infoArea = document.getElementById("infoArea");
     const emptyState = document.getElementById("emptyState");
-
     const openPickerBtn = document.getElementById("openPickerBtn");
     const pickerBack = document.getElementById("pickerBack");
     const closePicker = document.getElementById("closePicker");
-
     const addMatchBtn = document.getElementById("addMatchBtn");
     const addModal = document.getElementById("addModal");
     const cancelAddBtn = document.getElementById("cancelAddBtn");
     const saveMatchBtn = document.getElementById("saveMatchBtn");
-
     const fmMatch = document.getElementById("fmMatch");
     const fmDatetime = document.getElementById("fmDatetime");
     const fmStadium = document.getElementById("fmStadium");
     const fmCategory = document.getElementById("fmCategory");
-
+    const fmArticle = document.getElementById("fmArticle");
     const fmFlyerFile = document.getElementById("fmFlyerFile");
     const matchPreview = document.getElementById("matchPreview");
+    const currentFilterText = document.getElementById("currentFilterText");
 
-    let flyerCropper = null;
-    let flyerBlob = null;
-
+    let flyerFile = null;
     let currentCategory = "all";
     let allSchedules = [];
+    let currentUser = null;
 
-
-    // ==========================
-    // COUNTDOWN FORMATTER
-    // ==========================
-    function getCountdown(dt) {
-      const now = Date.now();
-      const diff = dt.getTime() - now;
-      if (diff <= 0) return null;
-
-      const days = Math.floor(diff / 86400000);
-      const hours = Math.floor((diff % 86400000) / 3600000);
-      const minutes = Math.floor((diff % 3600000) / 60000);
-
-      return `${days}D ${hours}H ${minutes}M`;
+    /***** HELPERS *****/
+    function toDate(v){
+      if(!v) return null;
+      if(typeof v.toDate==='function') return v.toDate();
+      if(v && typeof v.seconds==='number') return new Date(v.seconds*1000);
+      const d = new Date(v);
+      return isNaN(d.getTime())?null:d;
     }
 
-
-    // ==========================
-    // STATUS CHECKER
-    // ==========================
-    function getStatus(v) {
+    function getStatus(v){
       const dt = new Date(v.datetime);
       const now = Date.now();
       const start = dt.getTime();
-      const end = start + (2 * 60 * 60 * 1000); // 2 jam
-
-      if (now < start) return "upcoming";
-      if (now >= start && now <= end) return "live";
+      const end = start + (2*60*60*1000);
+      if(now < start) return "upcoming";
+      if(now >= start && now <= end) return "live";
       return "finished";
     }
 
-
-    // ==========================
-    // CARD GENERATOR
-    // ==========================
-    function makeCard(item, isAdmin) {
+    function makeCard(item, isAdmin){
       const v = item.data;
       const id = item.id;
-
       const dt = new Date(v.datetime);
       const status = getStatus(v);
-      const countdown = getCountdown(dt);
+      const countdown = (()=>{
+        const now = Date.now(); const diff = dt.getTime() - now;
+        if(diff<=0) return null;
+        const days = Math.floor(diff/86400000);
+        const hours = Math.floor((diff%86400000)/3600000);
+        const minutes = Math.floor((diff%3600000)/60000);
+        return `${days}D ${hours}H ${minutes}M`;
+      })();
 
-      const flyer = v.flyerUrl 
-        ? v.flyerUrl 
-        : "https://i.postimg.cc/PrV4N35r/user.png";
+      const flyer = v.flyerUrl || v.flyer || v.image || "https://i.postimg.cc/PrV4N35r/user.png";
 
       const el = document.createElement("div");
       el.className = "card";
 
-      // STATUS LABEL
       let statusHTML = "";
-      if (status === "upcoming") {
-        statusHTML = `<div class="status-label status-upcoming">UPCOMING</div>`;
-      } else if (status === "live") {
-        statusHTML = `<div class="status-label status-live">LIVE</div>`;
-      } else {
-        statusHTML = `<div class="status-label status-finished">FINISHED</div>`;
-      }
+      if(status==="upcoming") statusHTML = `<div class="status-label status-upcoming">UPCOMING</div>`;
+      else if(status==="live") statusHTML = `<div class="status-label status-live">LIVE</div>`;
+      else statusHTML = `<div class="status-label status-finished">FINISHED</div>`;
 
-      // COUNTDOWN
-      const countdownHTML = status === "upcoming" 
-        ? `<div class="meta" style="font-weight:700">⏳ ${countdown}</div>`
-        : "";
+      const countdownHTML = status==="upcoming" ? `<div class="meta" style="font-weight:700">⏳ ${countdown}</div>` : "";
 
-      // DELETE BUTTON (admin only)
-      const delBtn = isAdmin
-        ? `<button class="delete-btn" data-id="${id}">Delete</button>`
-        : "";
+      const delBtn = isAdmin ? `<button class="delete-btn" data-id="${id}">Delete</button>` : "";
 
       el.innerHTML = `
         ${statusHTML}
         ${delBtn}
-
-        <div class="thumb">
-          <img src="${flyer}" alt="flyer">
-        </div>
-
+        <div class="thumb"><img src="${flyer}" alt="flyer" loading="lazy" onerror="this.src='https://i.postimg.cc/PrV4N35r/user.png'"></div>
         <div class="match-title">${v.match}</div>
-
-        <div class="meta">
-          📅 ${dt.toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"})}
-          • ${dt.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})}
-        </div>
-
-        <div class="meta">🏟 ${v.stadium}</div>
-
+        <div class="meta">📅 ${dt.toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"})} • ${dt.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})}</div>
+        <div class="meta">🏟 ${v.stadium || '-'}</div>
         ${countdownHTML}
-
-        <a class="read-more" href="schedule-detail.html?id=${id}">
-          Read More
-        </a>
-
-        <div class="cat-chip">${v.category.toUpperCase()}</div>
+        <a class="read-more" href="schedule-detail.html?id=${id}">Read More</a>
+        <div class="cat-chip">${(v.category||"").toUpperCase()}</div>
       `;
-
       return el;
     }
 
-
-    // ==========================
-    // RENDER LIST
-    // ==========================
-    function renderList(isAdmin) {
-  let filtered = allSchedules;
-
-  if (currentCategory !== "all") {
-    filtered = filtered.filter(
-      s => s.data.category === currentCategory
-    );
-  }
-
-  // pastikan bersih setiap render
-  infoArea.textContent = "";
-
-  if (filtered.length === 0) {
-    grid.innerHTML = "";
-    emptyState.style.display = "block";
-    infoArea.textContent = "No matches found.";
-    return;
-  }
-
-  emptyState.style.display = "none";  
-  infoArea.textContent = "";   // 🔥 FIX penting
-
-  // SORTING (LIVE → UP → FINISHED)
-  filtered.sort((a,b) => {
-    const A = getStatus(a.data);
-    const B = getStatus(b.data);
-    const order = { live: 0, upcoming: 1, finished: 2 };
-    const diff = order[A] - order[B];
-    if (diff !== 0) return diff;
-
-    return new Date(a.data.datetime) - new Date(b.data.datetime);
-  });
-
-  grid.innerHTML = "";
-  filtered.forEach(item => {
-    const card = makeCard(item, isAdmin);
-    grid.appendChild(card);
-  });
-}
-
-
-    // ==========================
-    // LOAD DATA
-    // ==========================
-    async function loadSchedules(isAdmin = false) {
-      infoArea.textContent = "Loading...";
-      grid.innerHTML = "";
-
-      const q = query(collection(db, "schedule"), orderBy("datetime", "asc"));
-      const snap = await getDocs(q);
-
-      allSchedules = [];
-      snap.forEach(docSnap => {
-        allSchedules.push({
-          id: docSnap.id,
-          data: docSnap.data()
-        });
-      });
-
-      renderList(isAdmin);
+    /***** RENDER LIST *****/
+    function renderList(isAdmin){
+      let filtered = allSchedules.slice();
+      if(currentCategory !== "all") filtered = filtered.filter(s => (s.data.category||"") === currentCategory);
       infoArea.textContent = "";
+      if(filtered.length===0){
+        grid.innerHTML = "";
+        emptyState.style.display = "block";
+        infoArea.textContent = "No matches found.";
+        return;
+      }
+      emptyState.style.display = "none";
+      // sort: live -> upcoming -> finished, then by datetime asc
+      filtered.sort((a,b)=>{
+        const order = { live:0, upcoming:1, finished:2 };
+        const A = order[getStatus(a.data)];
+        const B = order[getStatus(b.data)];
+        if(A!==B) return A-B;
+        return new Date(a.data.datetime) - new Date(b.data.datetime);
+      });
+      grid.innerHTML = "";
+      // build fragment for performance
+      const frag = document.createDocumentFragment();
+      for(const item of filtered){
+        frag.appendChild(makeCard(item, isAdmin));
+      }
+      grid.appendChild(frag);
     }
 
+    /***** LOAD SCHEDULES (fast) *****/
+    async function loadSchedules(isAdmin=false){
+      infoArea.textContent = "Loading...";
+      grid.innerHTML = "";
+      try{
+        const q = query(collection(db,"schedule"), orderBy("datetime","asc"));
+        const snap = await getDocs(q);
+        allSchedules = [];
+        snap.forEach(docSnap => allSchedules.push({ id: docSnap.id, data: docSnap.data() }));
+        renderList(isAdmin);
+        infoArea.textContent = "";
+      }catch(err){
+        console.error("loadSchedules err", err);
+        infoArea.textContent = "Failed to load schedule.";
+        grid.innerHTML = "<div class='empty'>Failed to load data.</div>";
+      }
+    }
 
-    // ==========================
-    // PICKER OPEN / CLOSE
-    // ==========================
-    openPickerBtn.onclick = () => pickerBack.classList.add("show");
-    closePicker.onclick = () => pickerBack.classList.remove("show");
-
-    pickerBack.onclick = (e) => {
-      if (e.target === pickerBack) pickerBack.classList.remove("show");
-    };
-
-    document.querySelectorAll(".picker .opt").forEach(x => {
-      x.onclick = () => {
+    /***** PICKER UI *****/
+    openPickerBtn.onclick = ()=> pickerBack.classList.add("show");
+    closePicker.onclick = ()=> pickerBack.classList.remove("show");
+    pickerBack.onclick = (e)=> { if(e.target===pickerBack) pickerBack.classList.remove("show"); };
+    document.querySelectorAll(".picker .opt").forEach(x=>{
+      x.onclick = ()=>{
         currentCategory = x.dataset.val;
-        document.getElementById("currentFilterText").textContent = x.textContent;
+        currentFilterText.textContent = x.textContent;
         pickerBack.classList.remove("show");
-        renderList(window._isAdmin);
+        renderList(window._isAdmin || false);
       };
     });
 
+    /***** ADD MODAL UI *****/
+    addMatchBtn.onclick = ()=> addModal.classList.add("show");
+    cancelAddBtn.onclick = ()=> addModal.classList.remove("show");
 
-    // ==========================
-    // ADD MODAL
-    // ==========================
-    addMatchBtn.onclick = () => addModal.classList.add("show");
-    cancelAddBtn.onclick = () => addModal.classList.remove("show");
-
-
-    // ==========================
-    // HANDLE FLYER UPLOAD + CROP
-    // ==========================
-    fmFlyerFile.onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        matchPreview.src = reader.result;
-        matchPreview.style.display = "block";
-
-        // destroy old cropper
-        if (flyerCropper) flyerCropper.destroy();
-
-        flyerCropper = new Cropper(matchPreview, {
-          aspectRatio: 16/9,
-          viewMode: 1,
-          autoCropArea: 1
-        });
-      };
-      reader.readAsDataURL(file);
+    fmFlyerFile.onchange = (e)=>{
+      flyerFile = e.target.files[0] || null;
+      if(!flyerFile){ matchPreview.style.display = "none"; return; }
+      matchPreview.src = URL.createObjectURL(flyerFile);
+      matchPreview.style.display = "block";
     };
 
+    /***** UPLOAD TO IMGBB helper *****/
+    async function uploadToImgbb(file){
+      if(!file) return null;
+      // convert to base64 for imgbb
+      const base64 = await new Promise((res,rej)=>{
+        const r = new FileReader();
+        r.onload = ()=> res(r.result.split(",")[1]);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+      const form = new FormData();
+      form.append("key", IMGBB_API_KEY);
+      form.append("image", base64);
+      const resp = await fetch("https://api.imgbb.com/1/upload", { method:"POST", body: form });
+      const j = await resp.json();
+      if(!j || !j.success) throw new Error(j?.error?.message || "IMGBB upload failed");
+      return j.data.display_url || j.data.url;
+    }
 
-    // ==========================
-    // SAVE NEW MATCH
-    // ==========================
-    saveMatchBtn.onclick = async () => {
+    /***** SAVE NEW MATCH (admin) *****/
+    saveMatchBtn.onclick = async ()=>{
       const match = fmMatch.value.trim();
       const dtVal = fmDatetime.value;
       const stadium = fmStadium.value.trim();
       const category = fmCategory.value;
+      const article = fmArticle.value.trim();
 
-      if (!match || !dtVal) {
-        alert("Match & datetime wajib diisi.");
-        return;
-      }
+      if(!match || !dtVal){ alert("Match & datetime wajib diisi."); return; }
 
-      // spinner
       saveMatchBtn.disabled = true;
       saveMatchBtn.innerHTML = `<span class="spinner-inline"></span>Saving...`;
 
-      let flyerUrl = null;
-
-      // upload flyer (cropped)
-      if (flyerCropper) {
-        const canvas = flyerCropper.getCroppedCanvas({
-          width: 1600,
-          height: 900
+      try{
+        let flyerUrl = null;
+        if(flyerFile){
+          flyerUrl = await uploadToImgbb(flyerFile);
+        }
+        await addDoc(collection(db,"schedule"), {
+          match,
+          datetime: new Date(dtVal).toISOString(),
+          stadium,
+          category,
+          flyerUrl,
+          article,
+          createdAt: serverTimestamp()
         });
-
-        const blob = await new Promise(resolve =>
-          canvas.toBlob(resolve, "image/jpeg", 0.85)
-        );
-
-        const filename = `flyers/${Date.now()}.jpg`;
-        const { getStorage, ref, uploadBytes, getDownloadURL } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js");
-
-        const storage = getStorage();
-        const storageRef = ref(storage, filename);
-
-        await uploadBytes(storageRef, blob);
-        flyerUrl = await getDownloadURL(storageRef);
+        alert("Schedule added.");
+        addModal.classList.remove("show");
+        // reset
+        fmMatch.value = ""; fmDatetime.value = ""; fmStadium.value = "";
+        fmCategory.value = "laliga"; fmArticle.value = ""; fmFlyerFile.value = ""; matchPreview.style.display = "none";
+        flyerFile = null;
+        loadSchedules(window._isAdmin || false);
+      }catch(err){
+        console.error("save err", err);
+        alert("Failed: "+ err.message);
+      }finally{
+        saveMatchBtn.disabled = false;
+        saveMatchBtn.textContent = "Save";
       }
-
-      // save firestore
-      await addDoc(collection(db, "schedule"), {
-        match,
-        datetime: new Date(dtVal).toISOString(),
-        stadium,
-        category,
-        flyerUrl,
-        createdAt: serverTimestamp()
-      });
-
-      alert("Schedule added.");
-
-      addModal.classList.remove("show");
-      saveMatchBtn.disabled = false;
-      saveMatchBtn.textContent = "Save";
-
-      fmMatch.value = "";
-      fmDatetime.value = "";
-      fmStadium.value = "";
-      fmFlyerFile.value = "";
-      matchPreview.style.display = "none";
-
-      flyerCropper?.destroy();
-      flyerCropper = null;
-
-      loadSchedules(window._isAdmin);
     };
 
-
-    // ==========================
-    // DELETE MATCH (ADMIN)
-    // ==========================
-    document.addEventListener("click", async (e) => {
-      if (!e.target.classList.contains("delete-btn")) return;
-
-      if (!window._isAdmin) return alert("Admin only.");
-
-      const id = e.target.dataset.id;
-      if (!confirm("Delete this match?")) return;
-
-      await deleteDoc(doc(db, "schedule", id));
-
-      alert("Deleted.");
-      loadSchedules(true);
+    /***** DELETE handler (delegated) *****/
+    document.addEventListener("click", async (e)=>{
+      const t = e.target;
+      if(t.classList && t.classList.contains("delete-btn")){
+        if(!window._isAdmin) return alert("Admin only.");
+        const id = t.dataset.id;
+        if(!confirm("Delete this match?")) return;
+        try{
+          await deleteDoc(doc(db,"schedule",id));
+          alert("Deleted.");
+          loadSchedules(true);
+        }catch(err){ console.error(err); alert("Failed: "+err.message); }
+      }
     });
 
-
-    // ==========================
-    // AUTH (SHOW ADMIN BUTTON)
-    // ==========================
-    onAuthStateChanged(auth, (user) => {
-      window._isAdmin = user && user.uid === ADMIN_UID;
-
-      if (window._isAdmin) {
-        addMatchBtn.style.display = "inline-block";
-      } else {
-        addMatchBtn.style.display = "none";
+    /***** AUTH LISTENER (show admin buttons) *****/
+    onAuthStateChanged(auth, (user)=>{
+      currentUser = user;
+      const isAdmin = !!(user && user.uid === ADMIN_UID);
+      window._isAdmin = isAdmin;
+      addMatchBtn.style.display = isAdmin ? "inline-block" : "none";
+      // reload with admin flag so delete buttons appear
+      loadSchedules(isAdmin);
+      // update header avatar + sign text if present
+      const signText = document.getElementById("signText");
+      const avatarImg = document.getElementById("avatarImg");
+      if(signText) signText.textContent = user ? "Logout" : "Sign In";
+      if(avatarImg) {
+        if(user){ avatarImg.src = user.photoURL || ""; avatarImg.style.display = "block"; }
+        else avatarImg.style.display = "none";
       }
+    });
 
-      loadSchedules(window._isAdmin);
+    /***** AUTO load on header-ready (header injected earlier) *****/
+    window.addEventListener("header-ready", ()=>{
+      loadSchedules(false);
+    });
+
+    /***** Safety: also try DOMContentLoaded fallback *****/
+    document.addEventListener("DOMContentLoaded", ()=>{
+      setTimeout(()=> {
+        if(!document.getElementById("grid").children.length) loadSchedules(false);
+      }, 600);
     });
 
   </script>
-
 </body>
 </html>

@@ -10,9 +10,13 @@
 
   <style>
     :root {
-      --gold:#ffd700;--navy:#001b4d;--dark:#0b1d3a;--red:#e63946;--white:#fff;
+      --gold:#ffd700;
+      --navy:#001b4d;
+      --dark:#0b1d3a;
+      --red:#e63946;
+      --white:#fff;
     }
-    *{box-sizing:border-box;margin:0;padding:0}
+    *{margin:0;padding:0;box-sizing:border-box}
     html,body{
       font-family:"Poppins",sans-serif;
       background:linear-gradient(180deg,var(--dark),#0a1a38);
@@ -36,17 +40,17 @@
     .card{background:rgba(255,255,255,0.05);border-radius:12px;overflow:hidden;transition:transform .18s;position:relative}
     .card:hover{transform:translateY(-5px)}
     .thumb{position:relative;padding-top:56.25%;overflow:hidden;background:#111}
-    .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .4s ease;opacity:0}
+    .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .4s;opacity:0}
     .thumb img.loaded{opacity:1}
     .meta{text-align:center;padding:10px}
-    .category{display:inline-block;background:var(--gold);color:#000;padding:4px 10px;border-radius:999px;font-weight:700;font-size:.8rem}
+    .category{background:var(--gold);color:#000;padding:4px 10px;border-radius:999px;font-weight:700;font-size:.8rem}
     .delete-btn{background:var(--red);border:0;color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;margin-top:6px}
     footer{background:var(--navy);text-align:center;padding:15px;font-size:.9rem;margin-top:auto}
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;justify-content:center;align-items:center;z-index:1500}
     .overlay.show{display:flex}
     .form-card{background:#fff;color:#000;border-radius:12px;padding:20px;width:90%;max-width:600px}
     .form-group{margin-bottom:12px}
-    .form-group label{display:block;font-weight:600;margin-bottom:6px}
+    .form-group label{font-weight:600;margin-bottom:6px;display:block}
     .form-group input{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px}
     #cropArea{display:none;margin-top:10px;max-height:350px;overflow:hidden;border-radius:8px}
     #cropArea img{width:100%;display:block}
@@ -54,33 +58,28 @@
 </head>
 
 <body>
-  <!-- ✅ HEADER INCLUDE -->
+
+  <!-- HEADER -->
   <div id="include-header"></div>
   <script>
   (async()=>{
-    try{
-      const res = await fetch("header.html?cb="+Date.now());
-      const html = await res.text();
-      const headerContainer = document.getElementById("include-header");
-      headerContainer.innerHTML = html;
-
-      // jalankan ulang semua script header (termasuk module)
-      headerContainer.querySelectorAll("script").forEach((oldScript)=>{
-        const newScript = document.createElement("script");
-        if(oldScript.type) newScript.type = oldScript.type;
-        if(oldScript.src) newScript.src = oldScript.src;
-        else newScript.textContent = oldScript.textContent;
-        document.body.appendChild(newScript);
-      });
-      console.log("✅ Header loaded and scripts active");
-    }catch(e){console.error("❌ Header load failed:", e);}
+    const res = await fetch("header.html?cb=" + Date.now());
+    const html = await res.text();
+    const box = document.getElementById("include-header");
+    box.innerHTML = html;
+    box.querySelectorAll("script").forEach(old=>{
+      const s=document.createElement("script");
+      if(old.src) s.src=old.src;
+      else s.textContent=old.textContent;
+      document.body.appendChild(s);
+    });
   })();
   </script>
-  <!-- ✅ /HEADER INCLUDE -->
 
   <main>
     <div class="top-row">
       <h2>📸 Gallery</h2>
+
       <div style="display:flex;gap:12px;align-items:center">
         <div class="category-select">
           <div id="selectDisplay" class="select-display">All categories ▼</div>
@@ -93,6 +92,7 @@
             <div data-val="Other">Other</div>
           </div>
         </div>
+
         <button id="addBtn" class="btn" style="display:none;">＋ Add Photo</button>
       </div>
     </div>
@@ -100,10 +100,11 @@
     <div id="galleryGrid" class="gallery-grid"></div>
   </main>
 
-  <!-- Overlay Upload -->
+  <!-- ADD PHOTO MODAL -->
   <div id="overlay" class="overlay">
     <div class="form-card">
       <h3 style="text-align:center;margin-bottom:10px;">＋ Add Photo</h3>
+
       <div class="form-group">
         <label>Category</label>
         <select id="catInput" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ccc">
@@ -114,19 +115,22 @@
           <option value="Other">Other</option>
         </select>
       </div>
+
       <div class="form-group">
         <label>Subtitle</label>
-        <input id="subInput" placeholder="e.g. Jude Bellingham goal" />
+        <input id="subInput" placeholder="e.g. Modric training moment" />
       </div>
+
       <div class="form-group">
         <label>Upload Image</label>
         <input id="fileInput" type="file" accept="image/*" />
         <div id="cropArea"><img id="cropImg"></div>
         <button id="cropBtn" class="btn" style="display:none;margin-top:8px;">Crop (16:9)</button>
       </div>
+
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px;">
         <button id="saveBtn" class="btn">Upload</button>
-        <button onclick="closeOverlay()" class="btn ghost">Cancel</button>
+        <button onclick="overlay.classList.remove('show')" class="btn ghost">Cancel</button>
       </div>
     </div>
   </div>
@@ -136,9 +140,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
   <script type="module">
+    // FIREBASE
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+    // IMGBB
+    const IMGBB_API_KEY = "c438ddf1b0de692e084414e335436ec6";
 
     const firebaseConfig = {
       apiKey:"AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
@@ -149,95 +157,185 @@
       appId:"1:882098167537:web:acf50819e9c81adaad1350"
     };
 
-    const ADMIN_UID="T9MBugPPYLQ4HVu6uLBV3kEck3C2";
-    const app=initializeApp(firebaseConfig);
-    const db=getFirestore(app);
-    const auth=getAuth(app);
+    const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
 
-    const grid=document.getElementById("galleryGrid");
-    const selectDisplay=document.getElementById("selectDisplay");
-    const selectOptions=document.getElementById("selectOptions");
-    const addBtn=document.getElementById("addBtn");
-    const overlay=document.getElementById("overlay");
-    const catInput=document.getElementById("catInput");
-    const subInput=document.getElementById("subInput");
-    const fileInput=document.getElementById("fileInput");
-    const cropArea=document.getElementById("cropArea");
-    const cropImg=document.getElementById("cropImg");
-    const cropBtn=document.getElementById("cropBtn");
-    const saveBtn=document.getElementById("saveBtn");
-    let cropper,currentUser=null;
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    const auth= getAuth(app);
 
+    // DOM
+    const grid = document.getElementById("galleryGrid");
+    const selectDisplay = document.getElementById("selectDisplay");
+    const selectOptions = document.getElementById("selectOptions");
+    const addBtn = document.getElementById("addBtn");
+    const overlay = document.getElementById("overlay");
+
+    const fileInput = document.getElementById("fileInput");
+    const cropArea = document.getElementById("cropArea");
+    const cropImg  = document.getElementById("cropImg");
+    const cropBtn  = document.getElementById("cropBtn");
+    const saveBtn  = document.getElementById("saveBtn");
+
+    const catInput = document.getElementById("catInput");
+    const subInput = document.getElementById("subInput");
+
+    let currentUser = null;
+    let currentCategory = "all";
+    let cropper = null;
+
+    // CATEGORY DROPDOWN
     selectDisplay.onclick=()=>selectOptions.classList.toggle("show");
     selectOptions.querySelectorAll("div").forEach(opt=>{
       opt.onclick=()=>{
-        selectDisplay.textContent=opt.textContent+" ▼";
+        currentCategory = opt.dataset.val;
+        selectDisplay.textContent = opt.textContent + " ▼";
         selectOptions.classList.remove("show");
-        loadGallery(opt.dataset.val);
+        loadGallery();
       };
     });
 
-    async function loadGallery(cat="all"){
+    // LOAD GALLERY
+    async function loadGallery(){
       grid.innerHTML="<p style='color:#ccc;'>Loading...</p>";
-      let q=(cat!=="all")?query(collection(db,"gallery"),where("category","==",cat),orderBy("createdAt","desc")):query(collection(db,"gallery"),orderBy("createdAt","desc"));
+
+      let q=(currentCategory!=="all")
+        ? query(collection(db,"gallery"), where("category","==",currentCategory), orderBy("createdAt","desc"))
+        : query(collection(db,"gallery"), orderBy("createdAt","desc"));
+
       const snap=await getDocs(q);
       grid.innerHTML="";
-      if(snap.empty){grid.innerHTML="<p style='color:#bbb;'>No images found.</p>";return;}
+
+      if(snap.empty){
+        grid.innerHTML="<p style='color:#bbb;'>No images found.</p>";
+        return;
+      }
+
       snap.forEach(docSnap=>{
-        const d=docSnap.data();
-        const div=document.createElement("div");
-        div.className="card";
-        const img=document.createElement("img");
-        img.src=d.imageUrl;
-        img.loading="lazy";
-        img.onload=()=>img.classList.add("loaded");
-        div.innerHTML=`
+        const d = docSnap.data();
+        const card = document.createElement("div");
+        card.className="card";
+
+        const img = document.createElement("img");
+        img.src = d.imageUrl;
+        img.onload = () => img.classList.add("loaded");
+
+        card.innerHTML = `
           <div class='thumb'></div>
           <div class='meta'>
-            <span class='category'>${d.category||""}</span>
-            <p>${d.subtitle||""}</p>
-          </div>`;
-        div.querySelector(".thumb").appendChild(img);
-        if(currentUser && currentUser.uid===ADMIN_UID){
-          const del=document.createElement("button");
+            <span class='category'>${d.category}</span>
+            <p>${d.subtitle || ""}</p>
+          </div>
+        `;
+        card.querySelector(".thumb").appendChild(img);
+
+        if(currentUser && currentUser.uid === ADMIN_UID){
+          const del = document.createElement("button");
           del.textContent="🗑 Delete";
           del.className="delete-btn";
-          del.onclick=async()=>{if(confirm("Delete photo?")){await deleteDoc(doc(db,"gallery",docSnap.id));loadGallery(cat);}};
-          div.appendChild(del);
+          del.onclick = async () => {
+            if(confirm("Delete this photo?")){
+              await deleteDoc(doc(db,"gallery",docSnap.id));
+              loadGallery();
+            }
+          };
+          card.appendChild(del);
         }
-        grid.appendChild(div);
+
+        grid.appendChild(card);
       });
     }
 
-    onAuthStateChanged(auth,u=>{currentUser=u;if(u&&u.uid===ADMIN_UID)addBtn.style.display="inline-block";});
-    addBtn.onclick=()=>overlay.classList.add("show");
-    window.closeOverlay=()=>overlay.classList.remove("show");
+    // AUTH (Admin only button)
+    onAuthStateChanged(auth,(u)=>{
+      currentUser=u;
+      addBtn.style.display = (u && u.uid===ADMIN_UID) ? "inline-block" : "none";
+    });
 
-    fileInput.onchange=e=>{
-      const f=e.target.files[0];
-      if(!f)return;
-      const r=new FileReader();
-      r.onload=()=>{
-        cropImg.src=r.result;
+    // OPEN OVERLAY
+    addBtn.onclick = () => overlay.classList.add("show");
+
+    // CROP HANDLER
+    fileInput.onchange = e => {
+      const file = e.target.files[0];
+      if(!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        cropImg.src = reader.result;
         cropArea.style.display="block";
         cropBtn.style.display="inline-block";
-        cropper&&cropper.destroy();
-        cropper=new Cropper(cropImg,{aspectRatio:16/9,viewMode:1});
+
+        cropper && cropper.destroy();
+        cropper = new Cropper(cropImg,{
+          aspectRatio:16/9,
+          viewMode:1,
+          autoCropArea:1
+        });
       };
-      r.readAsDataURL(f);
-    };
-    cropBtn.onclick=()=>{
-      const canvas=cropper.getCroppedCanvas({width:1280,height:720});
-      cropImg.src=canvas.toDataURL("image/jpeg");
-      cropBtn.style.display="none";
-    };
-    saveBtn.onclick=async()=>{
-      if(!cropImg.src){alert("Please upload an image!");return;}
-      await addDoc(collection(db,"gallery"),{imageUrl:cropImg.src,subtitle:subInput.value,category:catInput.value,createdAt:serverTimestamp()});
-      alert("Photo added!");overlay.classList.remove("show");loadGallery();
+      reader.readAsDataURL(file);
     };
 
+    cropBtn.onclick=()=>{
+      const canvas = cropper.getCroppedCanvas({
+        width:1600,
+        height:900
+      });
+      cropImg.src = canvas.toDataURL("image/jpeg",0.9);
+      cropBtn.style.display="none";
+    };
+
+    // SAVE PHOTO (Upload to IMGBB)
+    saveBtn.onclick = async()=>{
+      if(!cropImg.src) return alert("Upload image first!");
+
+      saveBtn.textContent="Uploading...";
+      saveBtn.disabled=true;
+
+      // Convert base64 to blob
+      const blob = await (await fetch(cropImg.src)).blob();
+
+      const form = new FormData();
+      form.append("key", IMGBB_API_KEY);
+      form.append("image", blob);
+
+      const res = await fetch("https://api.imgbb.com/1/upload", {
+        method:"POST",
+        body: form
+      });
+
+      const json = await res.json();
+      if(!json.success){
+        alert("Upload failed");
+        saveBtn.disabled=false;
+        saveBtn.textContent="Upload";
+        return;
+      }
+
+      const imageURL = json.data.url;
+
+      await addDoc(collection(db,"gallery"),{
+        imageUrl: imageURL,
+        subtitle: subInput.value || "",
+        category: catInput.value,
+        createdAt: serverTimestamp()
+      });
+
+      alert("Photo added!");
+
+      overlay.classList.remove("show");
+      cropArea.style.display="none";
+      fileInput.value="";
+      subInput.value="";
+
+      saveBtn.disabled=false;
+      saveBtn.textContent="Upload";
+
+      loadGallery();
+    };
+
+    // FIRST LOAD
     loadGallery();
   </script>
+
 </body>
 </html>

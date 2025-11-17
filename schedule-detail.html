@@ -35,7 +35,6 @@
       padding: 20px;
     }
 
-    /* === Flyer Box === */
     .flyer-box {
       border: 2px solid var(--gold);
       border-radius: 12px;
@@ -47,136 +46,96 @@
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
     }
     .flyer-box img {
-      display: block;
       width: 100%;
-      height: auto;
       border-radius: 10px;
-      margin: 0 auto;
-    }
-    .flyer-box p {
-      color: #c8c8d0;
-      font-weight: 500;
-      margin: 10px 0;
     }
 
-    /* === Schedule Card === */
     .schedule-card {
       background: var(--gray);
       border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
       padding: 20px;
       margin-bottom: 20px;
       text-align: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
     }
-    .schedule-card h2 {
-      color: var(--white);
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-    .schedule-card p {
-      margin: 6px 0;
-      font-size: 0.95rem;
-      color: #f0f0f0;
-    }
+
+    .schedule-card h2 { margin-bottom: 10px; font-weight: 700; }
+    .schedule-card p { margin: 6px 0; }
+
     .status-btn {
       background: var(--gold);
       color: #000;
-      font-weight: 700;
       padding: 6px 18px;
       border-radius: 8px;
+      font-weight: 700;
       display: inline-block;
       margin-top: 10px;
     }
-    .status-finished {
-      background: rgba(255, 255, 255, 0.25);
-      color: #ddd;
-    }
+    .status-finished { background: rgba(255,255,255,0.25); color:#ddd; }
 
-    /* === Article Box === */
     .article-box {
       background: var(--gray);
-      border-radius: 12px;
       padding: 20px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
       margin-bottom: 40px;
-      color: var(--white);
-    }
-    .article-box h3 {
-      margin-bottom: 10px;
-      color: var(--white);
-    }
-    .article-box p {
-      line-height: 1.6;
-      text-align: justify;
-      white-space: pre-line;
-      color: #e5e5e5;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
     }
 
-    /* === Footer === */
+    .article-box h3 { margin-bottom: 10px; }
+    .article-box p { white-space: pre-line; line-height: 1.6; }
+
     footer {
       background: var(--navy);
-      color: var(--white);
       text-align: center;
       padding: 20px;
-      font-size: 0.9rem;
       margin-top: auto;
-      border-top: 1px solid rgba(255,255,255,0.1);
     }
 
-    /* === Buttons === */
     .back-btn, .delete-btn {
-      display: inline-block;
       padding: 8px 14px;
       border-radius: 8px;
       font-weight: 700;
-      cursor: pointer;
-      margin: 10px 5px 20px;
       text-decoration: none;
+      margin: 10px 5px 20px;
+      display: inline-block;
     }
-    .back-btn {
-      background: var(--gold);
-      color: #000;
-    }
-    .delete-btn {
-      background: var(--red);
-      color: white;
-      border: none;
-    }
+    .back-btn { background: var(--gold); color:#000; }
+    .delete-btn { background: var(--red); color:#fff; border:none; }
   </style>
 </head>
 
 <body>
-  <!-- ✅ Header include -->
+
+  <!-- HEADER INCLUDE -->
   <div id="include-header"></div>
   <script>
-  (async()=>{
-    const res = await fetch("header.html?cb=" + Date.now());
-    const html = await res.text();
-    const container = document.getElementById("include-header");
-    container.innerHTML = html;
-    container.querySelectorAll("script").forEach((oldScript)=>{
-      const newScript=document.createElement("script");
-      if(oldScript.type)newScript.type=oldScript.type;
-      if(oldScript.src)newScript.src=oldScript.src;
-      else newScript.textContent=oldScript.textContent;
-      document.body.appendChild(newScript);
-    });
-    window.dispatchEvent(new Event("header-ready"));
-  })();
+    (async () => {
+      const target = document.getElementById("include-header");
+      const res = await fetch("header.html?cb=" + Date.now());
+      const html = await res.text();
+      target.innerHTML = html;
+
+      target.querySelectorAll("script").forEach(old => {
+        const s = document.createElement("script");
+        if (old.src) s.src = old.src; else s.textContent = old.textContent;
+        document.body.appendChild(s);
+        old.remove();
+      });
+
+      window.dispatchEvent(new Event("header-ready"));
+    })();
   </script>
 
   <main>
-    <div class="flyer-box" id="flyerBox">
-      <p>Loading flyer...</p>
-    </div>
+    <div class="flyer-box" id="flyerBox"><p>Loading flyer...</p></div>
 
-    <div class="schedule-card" id="matchCard">
+    <div class="schedule-card">
       <h2 id="matchTitle">Loading...</h2>
-      <p id="matchStadium">🏟 Loading stadium...</p>
-      <p id="matchDate">📅 Loading date...</p>
-      <p id="matchTime">⏰ Loading time...</p>
-      <p id="matchScore">⚽ Loading score...</p>
-      <span id="matchStatus" class="status-btn">UPCOMING</span>
+      <p id="matchStadium"></p>
+      <p id="matchDate"></p>
+      <p id="matchTime"></p>
+      <p id="matchScore"></p>
+      <span id="matchStatus" class="status-btn"></span>
     </div>
 
     <div class="article-box">
@@ -185,26 +144,20 @@
     </div>
 
     <div style="text-align:center;">
-      <a href="schedule.html" class="back-btn">← Back to Schedule</a>
+      <a href="schedule.html" class="back-btn">← Back</a>
       <button id="deleteBtn" class="delete-btn" style="display:none;">🗑 Delete</button>
     </div>
   </main>
 
-  <footer>
-    © 2025 MadridForID | Fanbase Real Madrid Indonesia
-  </footer>
+  <footer>© 2025 MadridForID</footer>
 
-  <script type="module">
+<script type="module">
 window.addEventListener("header-ready", async () => {
-  console.log("✅ header-ready event triggered");
-
   try {
-    // === Firebase import ===
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js");
+    const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js");
     const { getFirestore, doc, getDoc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
     const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js");
 
-    // === Firebase Config ===
     const firebaseConfig = {
       apiKey: "AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
       authDomain: "madridforid-web.firebaseapp.com",
@@ -214,93 +167,88 @@ window.addEventListener("header-ready", async () => {
       appId: "1:882098167537:web:acf50819e9c81adaad1350"
     };
 
-    const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+    if (getApps().length === 0) initializeApp(firebaseConfig);
 
-    // === Get URL ID ===
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
-    console.log("🆔 Schedule ID:", id);
+    const db = getFirestore();
+    const auth = getAuth();
+
+    const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
+
+    // Get ID
+    const id = new URLSearchParams(window.location.search).get("id");
 
     if (!id) {
-      document.getElementById("flyerBox").innerHTML = "<p style='color:red;'>❌ Invalid ID</p>";
+      document.getElementById("flyerBox").innerHTML = `<p style="color:red">Invalid ID</p>`;
       return;
     }
 
-    // === Fetch Firestore Document ===
-    const docRef = doc(db, "schedule", id);
-    const snap = await getDoc(docRef);
-
+    const snap = await getDoc(doc(db, "schedule", id));
     if (!snap.exists()) {
-      document.getElementById("flyerBox").innerHTML = "<p style='color:red;'>❌ Schedule not found</p>";
+      document.getElementById("flyerBox").innerHTML = `<p style="color:red">Not found</p>`;
       return;
     }
 
     const data = snap.data();
-    console.log("📄 Data loaded:", data);
 
-    // === Render Data ===
-    const flyerBox = document.getElementById("flyerBox");
-    document.getElementById("matchTitle").textContent = data.match || "No Title";
+    // Fill data
+    document.getElementById("matchTitle").textContent = data.match;
     document.getElementById("matchStadium").textContent = `🏟 ${data.stadium || "-"}`;
     document.getElementById("matchScore").textContent = `⚽ ${data.score || "-"}`;
     document.getElementById("article").textContent = data.article || "-";
 
-    // === Flyer Logic (fix) ===
-    const flyerUrl = data.flyerUrl || data.flyer || data.image || "";
-    console.log("🖼 Flyer URL:", flyerUrl);
+    // Flyer (IMGBB)
+    const flyerUrl = data.flyerUrl || "";
 
-    if (flyerUrl && flyerUrl.startsWith("https")) {
-      flyerBox.innerHTML = `
-        <div style="display:flex;justify-content:center;align-items:center;">
-          <img src="${flyerUrl}" alt="Match Flyer" 
-            style="max-width:100%;border-radius:12px;display:block;" 
-            onerror="this.onerror=null;this.parentElement.innerHTML='<p style=color:red>⚠️ Flyer gagal dimuat</p>'"
-          >
-        </div>
+    if (flyerUrl) {
+      document.getElementById("flyerBox").innerHTML = `
+        <img src="${flyerUrl}" alt="Flyer" 
+          onerror="this.parentElement.innerHTML='<p style=color:red>Flyer gagal dimuat</p>'">
       `;
     } else {
-      flyerBox.innerHTML = "<p style='color:#ccc;'>No flyer found.</p>";
+      document.getElementById("flyerBox").innerHTML = "<p>No flyer available</p>";
     }
 
-    // === Date Handling ===
-    const date = new Date(data.datetime);
-    if (!isNaN(date)) {
-      document.getElementById("matchDate").textContent = `📅 ${date.toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })}`;
-      document.getElementById("matchTime").textContent = `⏰ ${date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB`;
-    }
+    // Date
+    const dt = new Date(data.datetime);
+    document.getElementById("matchDate").textContent = `📅 ${dt.toLocaleDateString("id-ID",{day:"2-digit",month:"long",year:"numeric"})}`;
+    document.getElementById("matchTime").textContent = `⏰ ${dt.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})} WIB`;
 
-    const now = new Date();
+    // Status
+    const now = Date.now();
     const statusEl = document.getElementById("matchStatus");
-    if (now > date) {
+
+    if (now > dt.getTime() + 2*60*60*1000) {
       statusEl.textContent = "FINISHED";
       statusEl.classList.add("status-finished");
-    } else {
+    } else if (now < dt.getTime()) {
       statusEl.textContent = "UPCOMING";
+    } else {
+      statusEl.textContent = "LIVE";
+      statusEl.style.background = "#e63946";
+      statusEl.style.color = "#fff";
     }
 
-    // === Delete button for admin ===
+    // Admin delete
     const deleteBtn = document.getElementById("deleteBtn");
     onAuthStateChanged(auth, (user) => {
       if (user && user.uid === ADMIN_UID) {
         deleteBtn.style.display = "inline-block";
-        deleteBtn.addEventListener("click", async () => {
-          if (confirm("Yakin hapus schedule ini?")) {
-            await deleteDoc(docRef);
-            alert("Schedule deleted!");
+        deleteBtn.onclick = async () => {
+          if (confirm("Hapus match ini?")) {
+            await deleteDoc(doc(db, "schedule", id));
+            alert("Deleted");
             window.location.href = "schedule.html";
           }
-        });
+        };
       }
     });
 
   } catch (err) {
-    console.error("🔥 Error during schedule load:", err);
-    document.getElementById("flyerBox").innerHTML = `<p style='color:red;'>Error loading data</p>`;
+    console.error(err);
+    document.getElementById("flyerBox").innerHTML = `<p style="color:red">Error loading data</p>`;
   }
 });
 </script>
+
 </body>
 </html>
