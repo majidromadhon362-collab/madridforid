@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>MadridForID | News</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
 
@@ -15,7 +16,6 @@
   --white: #ffffff;
 }
 
-/* RESET */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { width: 100%; min-height: 100%; overflow-x: hidden; }
 body {
@@ -43,54 +43,49 @@ main {
   margin-bottom: 15px;
 }
 
-.section-header h2 { font-size: 1.4rem; font-weight: 700; color: var(--white); }
+.section-header h2 { font-size: 1.4rem; font-weight: 700; }
 
 #createNewsBtn {
   display: none;
   background: var(--gold);
   color: var(--navy);
+  padding: 6px 12px;
   font-weight: 700;
   border: none;
   border-radius: 8px;
-  padding: 6px 12px;
   cursor: pointer;
 }
-#createNewsBtn:hover { opacity: 0.85; }
+#createNewsBtn:hover { opacity: .8; }
 
 /* NEWS CARD */
 .news-card {
   background: var(--gray);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  margin-bottom: 20px;
   overflow: hidden;
-  position: relative;
+  margin-bottom: 22px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
 }
-.news-card img {
-  width: 100%;
-  aspect-ratio: 16/9;
-  object-fit: cover;
-}
-.news-card h3 { font-size: 1.1rem; margin: 10px; color: var(--white); }
-.news-card p { font-size: 0.9rem; margin: 0 10px 10px; color: #ccc; }
+
+.news-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+.news-card h3 { margin: 10px; }
+.news-card p { margin: 0 10px 10px; color: #ccc; }
 
 .read-btn {
   background: var(--gold);
   color: var(--navy);
-  font-weight: 700;
-  padding: 6px 12px;
+  font-weight: bold;
   border-radius: 6px;
+  padding: 6px 10px;
   text-decoration: none;
-  margin: 0 10px 10px;
+  margin: 0 10px 12px;
   display: inline-block;
 }
 
 .card-footer {
+  padding: 10px;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding: 8px 15px 12px;
-  font-size: 0.9rem;
   color: #bbb;
 }
 
@@ -99,32 +94,31 @@ main {
   top: 10px;
   right: 10px;
   background: red;
-  color: white;
-  border: none;
-  border-radius: 50%;
+  color: #fff;
   width: 28px;
   height: 28px;
+  border-radius: 50%;
+  border: none;
   cursor: pointer;
 }
 
 /* FOOTER */
 footer {
   background: var(--navy);
+  padding: 18px;
   text-align: center;
-  padding: 20px;
   margin-top: auto;
-  font-size: 0.9rem;
 }
 
 /* POPUP */
 .popup {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(6px);
   display: none;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(6px);
   z-index: 999;
 }
 .popup.active { display: flex; }
@@ -132,7 +126,7 @@ footer {
 .popup form {
   background: var(--gray);
   padding: 20px;
-  border-radius: 10px;
+  border-radius: 12px;
   width: 90%;
   max-width: 400px;
   display: flex;
@@ -140,26 +134,18 @@ footer {
   gap: 10px;
 }
 .popup input, .popup textarea {
-  width: 100%;
-  padding: 8px;
-  border-radius: 6px;
-  border: none;
   background: #10254d;
-  color: var(--white);
-}
-
-#imgPreview {
-  width: 100%;
+  border: none;
+  padding: 8px;
+  color: #fff;
   border-radius: 6px;
-  max-height: 220px;
-  object-fit: cover;
-  display: none;
 }
+#imgPreview { max-height: 220px; width: 100%; border-radius: 6px; display: none; }
 
 .spinner {
   width: 16px; height: 16px;
   border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: var(--white);
+  border-top-color: #fff;
   border-radius: 50%;
   animation: spin .7s linear infinite;
 }
@@ -168,18 +154,21 @@ footer {
 </head>
 
 <body>
-<div id="include-header"></div>
 
+<!-- HEADER LOADER -->
+<div id="include-header"></div>
 <script>
 (async()=>{
-  const res = await fetch("header.html?cb=" + Date.now());
-  const html = await res.text();
   const container = document.getElementById("include-header");
+  const html = await (await fetch("header.html?cb=" + Date.now())).text();
   container.innerHTML = html;
 
+  // Re-run script header sebagai module
   container.querySelectorAll("script").forEach(old=>{
     const s=document.createElement("script");
-    if(old.src) s.src=old.src; else s.textContent=old.textContent;
+    s.type = "module";
+    if(old.src) s.src = old.src;
+    else s.textContent = old.textContent;
     document.body.appendChild(s);
   });
 })();
@@ -194,7 +183,7 @@ footer {
   <div id="newsContainer"></div>
 </main>
 
-<footer>© 2025 MadridForID | Real Madrid Indonesia Fanbase</footer>
+<footer>© 2025 MadridForID | Real Madrid Indonesian Fanbase</footer>
 
 <!-- POPUP -->
 <div class="popup" id="popupForm">
@@ -205,7 +194,6 @@ footer {
     <textarea id="content" placeholder="Content" required></textarea>
     <input type="file" id="imageFile" accept="image/*" required>
     <img id="imgPreview">
-
     <button id="uploadBtn" type="submit">Upload & Save</button>
   </form>
 </div>
@@ -215,8 +203,8 @@ footer {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
-  getFirestore, collection, getDocs,
-  addDoc, deleteDoc, doc, orderBy, query, serverTimestamp
+  getFirestore, collection, getDocs, addDoc, deleteDoc,
+  doc, orderBy, query, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
@@ -247,68 +235,63 @@ const newsContainer = document.getElementById("newsContainer");
 let currentUser = null;
 let cropper = null;
 
-// ========== AUTH ==========
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, user => {
   currentUser = user;
   createBtn.style.display = (user && user.uid === ADMIN_UID) ? "block" : "none";
   loadNews();
 });
 
-// ========== PREVIEW + CROP ==========
 fileInput.addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
+
   const reader = new FileReader();
   reader.onload = () => {
     imgPreview.src = reader.result;
     imgPreview.style.display = "block";
+
     cropper?.destroy();
     cropper = new Cropper(imgPreview, { aspectRatio: 16/9 });
   };
   reader.readAsDataURL(file);
 });
 
-// ========== OPEN POPUP ==========
-createBtn.addEventListener("click", ()=> popup.classList.add("active"));
-popup.addEventListener("click", (e)=> { if (e.target === popup) popup.classList.remove("active"); });
+createBtn.onclick = () => popup.classList.add("active");
+popup.onclick = (e)=>{ if(e.target===popup) popup.classList.remove("active"); };
 
-// ========== UPLOAD & SAVE ==========
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   if (!currentUser || currentUser.uid !== ADMIN_UID)
-    return alert("❌ Only Admin!");
+    return alert("Admin only!");
 
   uploadBtn.disabled = true;
-  uploadBtn.innerHTML = `<div class="spinner"></div> Uploading...`;
+  uploadBtn.innerHTML = `<div class='spinner'></div> Uploading...`;
 
-  cropper.getCroppedCanvas({ width: 900, height: 506 }).toBlob(async (blob) => {
+  cropper.getCroppedCanvas({ width:900, height:506 }).toBlob(async (blob)=>{
 
-    // Upload ke imgbb
     const fd = new FormData();
     fd.append("image", blob);
 
-    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-      method: "POST",
-      body: fd
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,{
+      method:"POST",
+      body:fd
     });
 
     const data = await res.json();
-    const imageURL = data.data.url;
+    const imgUrl = data.data.url;
 
-    // SIMPAN FIRESTORE
-    await addDoc(collection(db, "news"), {
+    await addDoc(collection(db,"news"),{
       title: title.value,
       summary: summary.value,
       content: content.value,
-      image: imageURL,
+      image: imgUrl,
       likes: 0,
-      likedBy: [],   // 🔥 WAJIB BIAR LIKE BERFUNGSI
+      likedBy: [],
       comments: [],
       createdAt: serverTimestamp()
     });
 
-    alert("✅ News Added!");
+    alert("News Added!");
     popup.classList.remove("active");
     form.reset();
     imgPreview.style.display = "none";
@@ -319,14 +302,13 @@ form.addEventListener("submit", async (e) => {
   });
 });
 
-// ========== LOAD NEWS ==========
-async function loadNews() {
-  const q = query(collection(db, "news"), orderBy("createdAt", "desc"));
+async function loadNews(){
+  const q = query(collection(db,"news"), orderBy("createdAt","desc"));
   const snap = await getDocs(q);
 
   newsContainer.innerHTML = "";
 
-  snap.forEach((docSnap) => {
+  snap.forEach(docSnap=>{
     const d = docSnap.data();
     const isAdmin = currentUser && currentUser.uid === ADMIN_UID;
 
@@ -343,20 +325,19 @@ async function loadNews() {
           <span>❤️ ${d.likes || 0}</span>
         </div>
 
-        ${isAdmin
-          ? `<button class="delete-btn" onclick="deleteNews('${docSnap.id}')">🗑️</button>`
-          : ""}
+        ${isAdmin ?
+          `<button class="delete-btn" onclick="deleteNews('${docSnap.id}')">🗑️</button>` 
+        : ""}
       </div>
     `;
   });
 }
 
-// ========== DELETE ==========
-window.deleteNews = async function(id) {
-  if (!confirm("Delete news?")) return;
-  await deleteDoc(doc(db, "news", id));
+window.deleteNews = async function(id){
+  if(!confirm("Delete news?")) return;
+  await deleteDoc(doc(db,"news",id));
   loadNews();
-};
+}
 </script>
 </body>
 </html>
