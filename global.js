@@ -163,31 +163,50 @@ export function renderResultsSafe(snap) {
   try {
     const wrap = document.getElementById("resultScroll");
     if (!wrap) return;
+
     wrap.innerHTML = "";
     const now = Date.now();
     const finished = [];
+
     snap.forEach(docSnap => {
       const d = docSnap.data();
       const dt = toDate(d.datetime);
       if (!dt) return;
-      const end = dt.getTime() + 2*60*60*1000;
+
+      const end = dt.getTime() + 2 * 60 * 60 * 1000; // match selesai 2 jam
       if (now > end) finished.push({ id: docSnap.id, ...d, dt });
     });
+
     if (!finished.length) {
       wrap.innerHTML = "<p style='opacity:.7'>No recent matches</p>";
       return;
     }
-    finished.sort((a,b) => b.dt - a.dt);
+
+    // urut dari terbaru
+    finished.sort((a, b) => b.dt - a.dt);
+
+    // render card
     finished.forEach(f => {
       wrap.innerHTML += `
         <div class="card" style="position:relative;">
           <h4>${f.match}</h4>
           <small>${f.dt.toLocaleString('id-ID')}</small>
-          <div style="font-weight:700;color:var(--gold);margin:8px 0">${f.score||'– : –'}</div>
+          <div style="font-weight:700;color:var(--gold);margin:8px 0">
+            ${f.score || '– : –'}
+          </div>
           <button class="editScoreBtn" data-id="${f.id}" style="display:none">Edit</button>
         </div>
       `;
     });
+
+    // ⭐ FIX PENTING: tampilkan tombol kalau admin
+    setTimeout(() => {
+      const isAdmin = currentUser && ADMIN_UIDS.includes(currentUser.uid);
+      document.querySelectorAll(".editScoreBtn").forEach(btn => {
+        btn.style.display = isAdmin ? "inline-block" : "none";
+      });
+    }, 300);
+
   } catch (e) {
     console.error("renderResultsSafe error:", e);
   }
