@@ -152,8 +152,8 @@ footer{
 
   box.querySelectorAll("script").forEach(s=>{
     const ns=document.createElement("script");
-    if(s.src)ns.src=s.src; else ns.textContent=s.textContent;
     ns.type=s.type || "module";
+    if(s.src)ns.src=s.src; else ns.textContent=s.textContent;
     document.body.appendChild(ns);
   });
 })();
@@ -177,30 +177,19 @@ footer{
 </div>
 
 <!-- RECENT RESULTS -->
-<div class="section-header">
-  <h2>⚽ Recent Results</h2>
-</div>
+<div class="section-header"><h2>⚽ Recent Results</h2></div>
 <div id="recentBox" class="h-scroll"></div>
 
 <!-- NEWS -->
-<div class="section-header">
-  <h2>📰 Latest News</h2>
-  <a href="news.html">View all</a>
-</div>
+<div class="section-header"><h2>📰 Latest News</h2><a href="news.html">View all</a></div>
 <div id="newsBox" class="h-scroll"></div>
 
 <!-- UPCOMING -->
-<div class="section-header">
-  <h2>📅 Upcoming Matches</h2>
-  <a href="schedule.html">View all</a>
-</div>
+<div class="section-header"><h2>📅 Upcoming Matches</h2><a href="schedule.html">View all</a></div>
 <div id="upcomingBox" class="h-scroll"></div>
 
 <!-- GALLERY -->
-<div class="section-header">
-  <h2>📸 Gallery</h2>
-  <a href="gallery.html">View all</a>
-</div>
+<div class="section-header"><h2>📸 Gallery</h2><a href="gallery.html">View all</a></div>
 <div id="galleryBox" class="h-scroll"></div>
 
 </main>
@@ -210,12 +199,14 @@ footer{
 <!-- MAIN JS -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, collection, doc, getDocs, getDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import {
+  getFirestore, collection, getDocs, query, orderBy, limit
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-const ADMIN_UID="T9MBugPPYLQ4HVu6uLBV3kEck3C2";
+const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
 
-const firebaseConfig={
+const firebaseConfig = {
   apiKey:"AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
   authDomain:"madridforid-web.firebaseapp.com",
   projectId:"madridforid-web",
@@ -224,23 +215,14 @@ const firebaseConfig={
   appId:"1:882098167537:web:acf50819e9c81adaad1350"
 };
 
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
-const auth=getAuth(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-/* ============= HERO ============= */
-async function loadHero(){
-  const wrap=document.getElementById("heroWrap");
-  wrap.innerHTML=`<button id="editHeroBtn" style="display:none;">✎ Edit Hero</button>`;
-  
-  const snap=await getDocs(collection(db,"home_hero"));
-  const urls=[];
-  snap.forEach(d=>{ if(d.data().url) urls.push(d.data().url) });
-
-  if(!urls.length){
-    wrap.innerHTML+="<p style='padding:20px;color:#bbb'>No slides yet</p>";
-    return;
-  }
+/* ================= HERO ================= */
+function initHero(urls){
+  const wrap = document.getElementById("heroWrap");
+  wrap.innerHTML = `<button id="editHeroBtn" style="display:none;">✎ Edit Hero</button>`;
 
   urls.forEach(url=>{
     const img=document.createElement("img");
@@ -250,9 +232,10 @@ async function loadHero(){
   });
 
   const slides=wrap.querySelectorAll(".slide");
+  if(slides.length===0) return;
+
   let i=0;
   slides[i].classList.add("active");
-
   setInterval(()=>{
     slides[i].classList.remove("active");
     i=(i+1)%slides.length;
@@ -260,40 +243,58 @@ async function loadHero(){
   },4000);
 }
 
-/* ============= NEWS ============= */
-async function loadNews(){
-  const box=document.getElementById("newsBox");
-  const q=query(collection(db,"news"),orderBy("createdAt","desc"),limit(8));
-  const snap=await getDocs(q);
+/* ================= FAST LOADING ================= */
+async function loadAll(){
+  const qHero   = getDocs(collection(db,"home_hero"));
+  const qNews   = getDocs(query(collection(db,"news"),orderBy("createdAt","desc"),limit(8)));
+  const qSched  = getDocs(query(collection(db,"schedule"),orderBy("datetime","asc"),limit(40)));
+  const qGallery= getDocs(query(collection(db,"gallery"),orderBy("createdAt","desc"),limit(12)));
 
-  box.innerHTML="";
-  snap.forEach(doc=>{
+  // FIRE ALL REQUESTS PARALLEL 🔥
+  const [heroSnap, newsSnap, schedSnap, gallerySnap] = await Promise.all([
+    qHero, qNews, qSched, qGallery
+  ]);
+
+  /* HERO */
+  const heroUrls=[];
+  heroSnap.forEach(d=>{
+    if(d.data().url) heroUrls.push(d.data().url);
+  });
+  initHero(heroUrls);
+
+  /* NEWS */
+  const newsBox=document.getElementById("newsBox");
+  newsBox.innerHTML="";
+  newsSnap.forEach(doc=>{
     const d=doc.data();
-    box.innerHTML+=`
+    newsBox.innerHTML+=`
       <div class="card">
         <img src="${d.image}">
         <h4 style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.title}</h4>
         <a class="btn-readmore" href="news-detail.html?id=${doc.id}">Read More</a>
-      </div>
-    `;
+      </div>`;
   });
-}
 
-/* ============= RECENT RESULTS ============= */
-async function loadResults(){
-  const box=document.getElementById("recentBox");
-  const q=query(collection(db,"schedule"),orderBy("datetime","desc"),limit(40));
-  const snap=await getDocs(q);
-
+  /* RESULTS + UPCOMING */
   const now=Date.now();
-  box.innerHTML="";
+  const recentBox=document.getElementById("recentBox");
+  const upcomingBox=document.getElementById("upcomingBox");
 
-  snap.forEach(doc=>{
+  recentBox.innerHTML="";
+  upcomingBox.innerHTML="";
+
+  schedSnap.forEach(doc=>{
     const d=doc.data();
     const dt=new Date(d.datetime).getTime();
 
-    if(now > dt + (2*60*60*1000)){
-      box.innerHTML+=`
+    const end = dt + (2*60*60*1000);
+    const isFinished = now > end;
+    const isLive = now >= dt && now <= end;
+    const isUpcoming = dt > now;
+
+    // RECENT RESULT
+    if(isFinished){
+      recentBox.innerHTML+=`
         <div class="card">
           <img src="${d.flyerUrl}">
           <h4 style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.match}</h4>
@@ -303,90 +304,54 @@ async function loadResults(){
         </div>
       `;
     }
-  });
 
-  onAuthStateChanged(auth,u=>{
-    const isAdmin=u && u.uid===ADMIN_UID;
-    document.querySelectorAll(".editScoreBtn").forEach(b=> b.style.display=isAdmin?"block":"none");
-  });
-}
+    // UPCOMING or LIVE
+    if(isUpcoming || isLive){
 
-/* ============= UPCOMING (WITH LIVE BADGE) ============= */
-async function loadUpcoming(){
-  const box=document.getElementById("upcomingBox");
-  const q=query(collection(db,"schedule"),orderBy("datetime","asc"),limit(40));
-  const snap=await getDocs(q);
+      const diff = dt-now;
+      const days = Math.max(0, Math.floor(diff/86400000));
+      const hrs = Math.max(0, Math.floor((diff%86400000)/3600000));
+      const mins = Math.max(0, Math.floor((diff%3600000)/60000));
 
-  const now=Date.now();
-  box.innerHTML="";
+      upcomingBox.innerHTML+=`
+        <div class="card">
+          ${isLive ? `<span class="live-badge"> LIVE 🔴</span>` : `<span class="upcoming-badge">UPCOMING</span>`}
+          <img src="${d.flyerUrl}">
+          <h4 style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.match}</h4>
 
-  snap.forEach(doc=>{
-    const d=doc.data();
-    const dt=new Date(d.datetime).getTime();
+          <small>🏟 ${d.stadium}</small><br>
+          <small>${new Date(dt).toLocaleDateString("id-ID")} • 
+          ${new Date(dt).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})}</small>
 
-    const start=dt;
-    const end=dt+(2*60*60*1000); // 2 jam live
+          ${isUpcoming ? `<div class="countdown">⏳ ${days}D ${hrs}H ${mins}M</div>` : ""}
 
-    let badge="";
-    if(now < start){
-      badge = `<span class="upcoming-badge">UPCOMING</span>`;
-    } else if(now >= start && now <= end){
-      badge = `<span class="live-badge">LIVE</span>`;
-    } else {
-      return; // jangan masuk upcoming
+          <a class="btn-readmore" href="schedule-detail.html?id=${doc.id}">Read More</a>
+        </div>
+      `;
     }
 
-    const diff=dt-now;
-    const days=Math.floor(diff/86400000);
-    const hrs=Math.floor((diff%86400000)/3600000);
-    const mins=Math.floor((diff%3600000)/60000);
-
-    const countdown = now < start
-      ? `⏳ ${days}D ${hrs}H ${mins}M`
-      : `🔴 LIVE NOW`;
-
-    box.innerHTML+=`
-      <div class="card">
-        ${badge}
-        <img src="${d.flyerUrl}">
-        <h4 style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.match}</h4>
-
-        <small>🏟 ${d.stadium}</small><br>
-        <small>${new Date(dt).toLocaleDateString("id-ID")} • 
-        ${new Date(dt).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})}</small>
-
-        <div class="countdown">${countdown}</div>
-
-        <a class="btn-readmore" href="schedule-detail.html?id=${doc.id}">Read More</a>
-      </div>
-    `;
   });
-}
 
-/* ============= GALLERY ============= */
-async function loadGallery(){
-  const box=document.getElementById("galleryBox");
-  const q=query(collection(db,"gallery"),orderBy("createdAt","desc"),limit(12));
-  const snap=await getDocs(q);
-
-  box.innerHTML="";
-  snap.forEach(doc=>{
+  /* GALLERY */
+  const galleryBox=document.getElementById("galleryBox");
+  galleryBox.innerHTML="";
+  gallerySnap.forEach(doc=>{
     const d=doc.data();
-    box.innerHTML+=`
-      <div class="card">
-        <img src="${d.imageUrl}">
-      </div>
-    `;
+    galleryBox.innerHTML+=`
+      <div class="card"><img src="${d.imageUrl}"></div>`;
   });
+
 }
 
-/* INIT LOAD */
-loadHero();
-loadNews();
-loadResults();
-loadUpcoming();
-loadGallery();
+/* ADMIN EDIT SCORE BTN */
+onAuthStateChanged(auth, (user)=>{
+  const isAdmin=user && user.uid===ADMIN_UID;
+  document.querySelectorAll(".editScoreBtn")
+    .forEach(btn=>btn.style.display=isAdmin?"block":"none");
+});
 
+/* RUN */
+window.addEventListener("header-ready", loadAll);
 </script>
 
 </body>

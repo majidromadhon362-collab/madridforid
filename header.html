@@ -171,38 +171,59 @@
     <a href="about.html">About</a>
   </div>
 
-<script>
-/* ----------------------------------
-   HEADER SCRIPT (NO FIREBASE HERE)
-------------------------------------- */
+<!-- 🔥 FIREBASE AUTH ADA DI HEADER -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
+/* FIREBASE CONFIG */
+const firebaseConfig = {
+  apiKey: "AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
+  authDomain: "madridforid-web.firebaseapp.com",
+  projectId: "madridforid-web",
+  storageBucket: "madridforid-web.appspot.com",
+  messagingSenderId: "882098167537",
+  appId: "1:882098167537:web:acf50819e9c81adaad1350"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+/* ELEMENTS */
 const burger = document.getElementById("burgerBtn");
 const mobile = document.getElementById("mobileDropdown");
 const signBtn = document.getElementById("signBtn");
 const signText = document.getElementById("signText");
 const avatarImg = document.getElementById("avatarImg");
 
-// toggle burger
+/* BURGER MENU */
 burger?.addEventListener("click", () => {
   mobile.classList.toggle("show");
 });
-
-// close dropdown if click outside
 document.addEventListener("click", (e) => {
   if (!mobile.contains(e.target) && !burger.contains(e.target)) {
     mobile.classList.remove("show");
   }
 });
 
-// signal header-ready
-window.dispatchEvent(new Event("header-ready"));
+/* SIGN IN / LOGOUT */
+signBtn?.addEventListener("click", async () => {
+  if (auth.currentUser) {
+    await signOut(auth);
+  } else {
+    await signInWithPopup(auth, provider);
+  }
+});
 
-// ---- AUTH UI UPDATE ----
-// halaman lain akan meng-handle firebase, lalu trigger event ini:
-
-window.addEventListener("auth-updated", (e) => {
-  const user = e.detail.user;
-
+/* AUTH LISTENER */
+onAuthStateChanged(auth, (user) => {
   if (user) {
     signText.textContent = "Logout";
     avatarImg.src = user.photoURL || "https://i.postimg.cc/PrV4N35r/user.png";
@@ -211,7 +232,13 @@ window.addEventListener("auth-updated", (e) => {
     signText.textContent = "Sign In";
     avatarImg.style.display = "none";
   }
+
+  // 🔥 KIRIM SINYAL KE HALAMAN UTAMA
+  window.dispatchEvent(new CustomEvent("auth-updated", { detail: { user } }));
 });
+
+/* HEADER READY */
+window.dispatchEvent(new Event("header-ready"));
 </script>
 
 </header>
