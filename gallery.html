@@ -125,7 +125,7 @@
 
 <body>
 
-  <!-- HEADER (strip script, wire manually — same as schedule) -->
+  <!-- HEADER -->
   <div id="include-header"></div>
   <script>
     (async()=>{
@@ -171,7 +171,7 @@
             <div data-val="Press Conference">Press Conference</div>
             <div data-val="Celebration">Celebration</div>
             <div data-val="Other">Other</div>
-          </div>
+            </div>
         </div>
 
         <button id="addBtn" class="btn" style="display:none;">＋ Add Photo</button>
@@ -219,7 +219,7 @@
 
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px;">
         <button id="saveBtn" class="btn">Upload</button>
-        <button onclick="overlay.classList.remove('show')" class="btn ghost">Cancel</button>
+        <button id="cancelBtn" class="btn ghost">Cancel</button>
       </div>
     </div>
   </div>
@@ -269,6 +269,8 @@ const errorMsg = document.getElementById("errorMsg");
 
 const addBtn = document.getElementById("addBtn");
 const overlay = document.getElementById("overlay");
+const cancelBtn = document.getElementById("cancelBtn");
+
 const fileInput = document.getElementById("fileInput");
 const cropArea = document.getElementById("cropArea");
 const cropImg  = document.getElementById("cropImg");
@@ -296,15 +298,36 @@ selectOptions.querySelectorAll("div").forEach(opt=>{
   };
 });
 
-/* ----------------------------- GALLERY LOADER (FAST) ------------------------------ */
+/* ----------------------------- OPEN ADD PHOTO MODAL ------------------------------ */
+addBtn.onclick = ()=>{
+  overlay.classList.add("show");
+  fileInput.value = "";
+  subInput.value = "";
+  cropArea.style.display = "none";
+  cropBtn.style.display = "none";
+  cropper && cropper.destroy();
+};
+
+/* CLOSE MODAL */
+cancelBtn.onclick = ()=> overlay.classList.remove("show");
+
+/* CLOSE MODAL WHEN CLICK OUTSIDE */
+overlay.onclick = (e)=>{
+  if(e.target === overlay){
+    overlay.classList.remove("show");
+  }
+};
+
+/* ----------------------------- GALLERY LOADER ------------------------------ */
 
 async function loadGallery(reset = false){
   try{
-    errorMsg.textContent = "Loading gallery...";
     if(reset){
       grid.innerHTML = "";
       lastVisible = null;
     }
+
+    errorMsg.textContent = "Loading...";
 
     let q;
 
@@ -385,12 +408,10 @@ async function loadGallery(reset = false){
   }
 }
 
-/* ----------------------------- LOAD MORE ------------------------------ */
-
+/* LOAD MORE */
 loadMoreBtn.onclick = ()=> loadGallery(false);
 
 /* ----------------------------- CROPPER HANDLER ------------------------------ */
-
 fileInput.onchange = e=>{
   const file = e.target.files[0];
   if(!file) return;
@@ -472,7 +493,7 @@ async function uploadToGitHub(file){
   return `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${path}`;
 }
 
-/* ----------------------------- SAVE PHOTO (ADMIN) ------------------------------ */
+/* ----------------------------- SAVE PHOTO ------------------------------ */
 
 saveBtn.onclick = async()=>{
   if(!cropImg.src) return alert("Upload image first!");
@@ -507,37 +528,34 @@ saveBtn.onclick = async()=>{
   }
 };
 
-/* ----------------------------- AUTH LISTENER ------------------------------ */
+/* ----------------------------- AUTH ------------------------------ */
 
 onAuthStateChanged(auth, user=>{
   currentUser = user;
   addBtn.style.display = (user && user.uid === ADMIN_UID) ? "inline-block" : "none";
 
-  setTimeout(()=>{  
-    const signBtn = document.getElementById("signBtn");
-    const signText = document.getElementById("signText");
-    const avatarImg = document.getElementById("avatarImg");
+  // Update header
+  const signText = document.getElementById("signText");
+  const avatarImg = document.getElementById("avatarImg");
+  const signBtn = document.getElementById("signBtn");
 
-    if(signBtn){
-      signBtn.onclick = async()=>{
-        if(auth.currentUser) await signOut(auth);
-        else await signInWithPopup(auth, provider);
-      };
-    }
+  if(signText) signText.textContent = user ? "Logout" : "Sign In";
+  if(avatarImg){
+    avatarImg.style.display = user ? "block" : "none";
+    if(user) avatarImg.src = user.photoURL;
+  }
 
-    if(signText) signText.textContent = user ? "Logout" : "Sign In";
-    if(avatarImg){
-      avatarImg.style.display = user ? "block" : "none";
-      if(user) avatarImg.src = user.photoURL || "";
-    }
-  },200);
+  if(signBtn){
+    signBtn.onclick = async()=>{
+      if(auth.currentUser) await signOut(auth);
+      else await signInWithPopup(auth, provider);
+    };
+  }
 });
 
-/* ----------------------------- INIT WHEN HEADER READY ------------------------------ */
+/* ----------------------------- INIT ------------------------------ */
 
-window.addEventListener("header-ready", ()=>{
-  loadGallery(true);
-});
+window.addEventListener("header-ready", ()=> loadGallery(true));
 
 document.addEventListener("DOMContentLoaded", ()=>{
   if(window._headerReady) loadGallery(true);
