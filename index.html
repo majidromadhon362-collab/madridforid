@@ -36,6 +36,32 @@ html,body{
 .hero-card h1{font-size:1.8rem;font-weight:800;margin-bottom:6px;}
 .hero-card p{color:#c8c8d0;margin-bottom:14px;font-size:.95rem;}
 
+/* ==== DESKTOP HERO LAYOUT (LEFT TEXT — RIGHT SLIDE) ==== */
+@media (min-width: 900px) {
+  .hero-wrapper {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .hero-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hero-right {
+    flex: 1.2;
+  }
+
+  .hero-slideshow {
+    height: 100%;
+    aspect-ratio: unset;
+    min-height: 260px;
+  }
+}
+
 .hero-btn-row{
   display:flex;align-items:center;gap:18px;
 }
@@ -131,6 +157,24 @@ html,body{
   margin:6px 0 10px;
 }
 
+/* ---------- EDIT SCORE POPUP (modal) ---------- */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,0.55);
+  display:none;align-items:center;justify-content:center;z-index:2100;
+}
+.modal-backdrop.show{display:flex;}
+.modal-card{
+  background:var(--gray);color:var(--white);padding:16px;border-radius:12px;
+  width:92%;max-width:420px;box-shadow:0 10px 30px rgba(0,0,0,0.45);
+  display:flex;flex-direction:column;gap:10px;
+}
+.modal-card h3{margin:0;font-size:1rem}
+.input-row{display:flex;gap:8px;align-items:center;}
+.input-row input{flex:1;padding:8px;border-radius:8px;border:0;background:#0f274f;color:#fff}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#ddd;padding:8px 10px;border-radius:8px;cursor:pointer}
+.btn-primary{background:var(--gold);color:#000;padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:700}
+
 /* ---------- FOOTER ---------- */
 footer{
   background:var(--navy);
@@ -144,61 +188,101 @@ footer{
 }
 </style>
 </head>
-
 <body>
 
-<!-- HEADER (injected without scripts to avoid double init) -->
+<!-- HEADER placeholder (will be injected by JS in Part 3) -->
 <div id="include-header"></div>
 
-<main class="container">
+<main class="container" role="main">
 
-<!-- HERO -->
-<div class="hero-card">
-  <h1>Welcome to MadridForID</h1>
-  <p>The digital community for Real Madrid fans in Indonesia — news, fixtures, standings, and more.</p>
+  <!-- HERO -->
+  <div class="hero-card">
+  <div class="hero-wrapper">
 
-  <div class="hero-btn-row">
-    <a href="news.html" class="btn-gold">View News</a>
-    <a href="#" class="explore-link">Explore</a>
-  </div>
+    <!-- LEFT SIDE TEXT -->
+    <div class="hero-left">
+      <h1>Welcome to MadridForID</h1>
+      <p>The digital community for Real Madrid fans in Indonesia — news, fixtures, standings, and more.</p>
 
-  <div class="hero-slideshow" id="heroWrap">
-    <button id="editHeroBtn">✎ Edit Hero</button>
+      <div class="hero-btn-row">
+        <a href="news.html" class="btn-gold">View News</a>
+        <a href="#" class="explore-link">Explore</a>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE SLIDER -->
+    <div class="hero-right">
+      <div class="hero-slideshow" id="heroWrap">
+        <button id="editHeroBtn">✎ Edit Hero</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- RECENT RESULTS -->
-<div class="section-header"><h2>⚽ Recent Results</h2></div>
-<div id="recentBox" class="h-scroll" aria-live="polite"></div>
+  <!-- RECENT RESULTS -->
+  <div class="section-header"><h2>⚽ Recent Results</h2></div>
+  <div id="recentBox" class="h-scroll" aria-live="polite" tabindex="0"></div>
 
-<!-- NEWS -->
-<div class="section-header"><h2>📰 Latest News</h2><a href="news.html">View all</a></div>
-<div id="newsBox" class="h-scroll" aria-live="polite"></div>
+  <!-- NEWS -->
+  <div class="section-header"><h2>📰 Latest News</h2><a href="news.html">View all</a></div>
+  <div id="newsBox" class="h-scroll" aria-live="polite" tabindex="0"></div>
 
-<!-- UPCOMING -->
-<div class="section-header"><h2>📅 Upcoming Matches</h2><a href="schedule.html">View all</a></div>
-<div id="upcomingBox" class="h-scroll" aria-live="polite"></div>
+  <!-- UPCOMING -->
+  <div class="section-header"><h2>📅 Upcoming Matches</h2><a href="schedule.html">View all</a></div>
+  <div id="upcomingBox" class="h-scroll" aria-live="polite" tabindex="0"></div>
 
-<!-- GALLERY -->
-<div class="section-header"><h2>📸 Gallery</h2><a href="gallery.html">View all</a></div>
-<div id="galleryBox" class="h-scroll" aria-live="polite"></div>
+  <!-- GALLERY -->
+  <div class="section-header"><h2>📸 Gallery</h2><a href="gallery.html">View all</a></div>
+  <div id="galleryBox" class="h-scroll" aria-live="polite" tabindex="0"></div>
 
 </main>
 
+<!-- EDIT SCORE MODAL (re-usable) -->
+<div id="editScoreModalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal-card" role="document" aria-labelledby="editScoreTitle">
+    <h3 id="editScoreTitle">Edit Match Score</h3>
+
+    <div style="font-size:.95rem;color:#ccc">Match: <strong id="modalMatchTitle">-</strong></div>
+
+    <div class="input-row" style="margin-top:8px">
+      <input id="scoreHomeInput" type="text" placeholder="Home score (e.g. 2)" inputmode="numeric" aria-label="Home score">
+      <input id="scoreAwayInput" type="text" placeholder="Away score (e.g. 1)" inputmode="numeric" aria-label="Away score">
+    </div>
+
+    <div style="font-size:.85rem;color:#bbb">Add short note (optional)</div>
+    <textarea id="scoreNote" rows="3" style="width:100%;padding:8px;border-radius:8px;border:0;background:#0f274f;color:#fff"></textarea>
+
+    <div class="modal-actions">
+      <button id="cancelScoreBtn" class="btn-ghost">Cancel</button>
+      <button id="saveScoreBtn" class="btn-primary">Save Score</button>
+    </div>
+  </div>
+</div>
+
+<!-- GALLERY PHOTO PREVIEW (lightbox) -->
+<div id="photoPreviewBackdrop" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="modal-card" style="max-width:900px; padding:0; background:transparent; box-shadow:none;">
+    <div style="position:relative;padding-top:56.25%;overflow:hidden;border-radius:12px;background:#000">
+      <img id="photoPreviewImg" src="" alt="Preview" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:12px">
+      <button id="closePhotoPreview" class="btn-ghost" style="position:absolute;top:10px;right:10px;">Close</button>
+    </div>
+  </div>
+</div>
+
 <footer>© 2025 MadridForID | Real Madrid Indonesia Fanbase</footer>
 
-<!-- MAIN JS -->
+<!-- === PART 3 (JS) === -->
 <script type="module">
-/* =======================
-   FIREBASE + CONFIG
-   ======================= */
+/* ========= FIREBASE + IMPORTS ========= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
-  getFirestore, collection, getDocs, query, orderBy, limit
+  getFirestore, collection, getDocs, query, orderBy, limit,
+  doc, getDoc, updateDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-
-const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
+import {
+  getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
@@ -208,268 +292,142 @@ const firebaseConfig = {
   messagingSenderId:"882098167537",
   appId:"1:882098167537:web:acf50819e9c81adaad1350"
 };
+const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-/* =======================
-   HEADER INJECTION (strip scripts)
-   - This prevents double Firebase init from header module.
-   - Then we wire burger + sign locally below.
-   ======================= */
-(async function injectHeaderStripScripts(){
+/* ========= LOAD HEADER (FULL FIX) ========= */
+async function loadHeader(){
   try{
-    const target = document.getElementById("include-header");
-    const res = await fetch("header.html?cb=" + Date.now());
-    if(!res.ok){ target.innerHTML=""; window.dispatchEvent(new Event("header-ready")); return; }
+    const box = document.getElementById("include-header");
+    const res = await fetch("/header.html?cb=" + Date.now());
+
+    if (!res.ok){
+      console.error("HEADER NOT FOUND");
+      return;
+    }
+
     const html = await res.text();
 
+    // strip all <script> from header.html
     const tmp = document.createElement("div");
     tmp.innerHTML = html;
+    tmp.querySelectorAll("script").forEach(s => s.remove());
 
-    // remove module scripts so header won't re-init firebase
-    tmp.querySelectorAll("script").forEach(s=>s.remove());
-    target.innerHTML = tmp.innerHTML;
+    // insert into DOM
+    box.innerHTML = tmp.innerHTML;
 
-    // local wiring for burger & sign (header scriptless)
+    // logo → home
+    const logoTitle = document.querySelector(".brand-title");
+    const logoImg   = document.querySelector(".brand-logo");
+    if(logoTitle) logoTitle.onclick = ()=> window.location.href = "index.html";
+    if(logoImg)   logoImg.onclick   = ()=> window.location.href = "index.html";
+
+    // burger
     const burger = document.getElementById("burgerBtn");
     const mobile = document.getElementById("mobileDropdown");
-    const signBtn = document.getElementById("signBtn");
-    const signText = document.getElementById("signText");
-    const avatarImg = document.getElementById("avatarImg");
-
-    // burger toggle
-    burger?.addEventListener("click", ()=> mobile.classList.toggle("show"));
-    document.addEventListener("click", (e)=>{
-      if(!mobile || !burger) return;
-      if(!mobile.contains(e.target) && !burger.contains(e.target)) mobile.classList.remove("show");
-    });
-
-    // sign in/out local handler
-    signBtn?.addEventListener("click", async ()=>{
-      if(auth.currentUser) await signOut(auth);
-      else await signInWithPopup(auth, provider);
-    });
-
-    // signal ready
-    window.dispatchEvent(new Event("header-ready"));
-  }catch(err){
-    console.error("header inject failed", err);
-    window.dispatchEvent(new Event("header-ready"));
-  }
-})();
-
-/* =======================
-   FAST PARALLEL LOAD
-   ======================= */
-async function loadAll(){
-  const heroWrap = document.getElementById("heroWrap");
-  const newsBox = document.getElementById("newsBox");
-  const upcomingBox = document.getElementById("upcomingBox");
-  const recentBox = document.getElementById("recentBox");
-  const galleryBox = document.getElementById("galleryBox");
-
-  // show quick placeholders
-  newsBox.innerHTML = `<div class="card" style="min-width:200px;padding:12px;color:#bbb;">Loading news...</div>`;
-  upcomingBox.innerHTML = `<div class="card" style="min-width:200px;padding:12px;color:#bbb;">Loading schedule...</div>`;
-  recentBox.innerHTML = `<div class="card" style="min-width:200px;padding:12px;color:#bbb;">Loading results...</div>`;
-  galleryBox.innerHTML = `<div class="card" style="min-width:200px;padding:12px;color:#bbb;">Loading gallery...</div>`;
-
-  // prepare queries (fire in parallel)
-  const qHero   = getDocs(collection(db,"home_hero"));
-  const qNews   = getDocs(query(collection(db,"news"), orderBy("createdAt","desc"), limit(8)));
-  const qSched  = getDocs(query(collection(db,"schedule"), orderBy("datetime","asc"), limit(50)));
-  const qGallery= getDocs(query(collection(db,"gallery"), orderBy("createdAt","desc"), limit(12)));
-
-  const [heroSnap, newsSnap, schedSnap, gallerySnap] = await Promise.all([qHero, qNews, qSched, qGallery]);
-
-  /* ---------- HERO ---------- */
-  (function renderHero(){
-    heroWrap.innerHTML = `<button id="editHeroBtn" style="display:none;">✎ Edit Hero</button>`;
-    const urls = [];
-    heroSnap.forEach(d=>{ const data = d.data(); if(data && data.url) urls.push(data.url); });
-    if(urls.length===0) return;
-    urls.forEach((url,i)=>{
-      const img = document.createElement("img");
-      img.className = "slide";
-      img.src = url;
-      img.loading = "lazy";
-      img.alt = "hero";
-      heroWrap.appendChild(img);
-    });
-    const slides = heroWrap.querySelectorAll(".slide");
-    if(slides.length===0) return;
-    slides[0].classList.add("active");
-    let idx = 0;
-    setInterval(()=>{
-      slides[idx].classList.remove("active");
-      idx = (idx+1) % slides.length;
-      slides[idx].classList.add("active");
-    }, 4000);
-  })();
-
-  /* ---------- NEWS ---------- */
-  (function renderNews(){
-    newsBox.innerHTML = "";
-    const frag = document.createDocumentFragment();
-    newsSnap.forEach(doc=>{
-      const d = doc.data();
-      const card = document.createElement("div");
-      card.className = "card";
-      const img = document.createElement("img");
-      img.src = d.image || "https://raw.githubusercontent.com/majidromadhon362-collab/madridforid-images/main/1000089950-removebg-preview%20(2).png";
-      img.loading = "lazy";
-      img.alt = d.title || "news";
-      const h4 = document.createElement("h4");
-      h4.style = "white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
-      h4.textContent = d.title || "Untitled";
-      const a = document.createElement("a");
-      a.className = "btn-readmore";
-      a.href = `news-detail.html?id=${doc.id}`;
-      a.textContent = "Read More";
-
-      card.appendChild(img);
-      card.appendChild(h4);
-      card.appendChild(a);
-      frag.appendChild(card);
-    });
-    newsBox.appendChild(frag);
-  })();
-
-  /* ---------- SCHEDULE (recent + upcoming) ---------- */
-  (function renderSchedule(){
-    const now = Date.now();
-    recentBox.innerHTML = "";
-    upcomingBox.innerHTML = "";
-    const recentFrag = document.createDocumentFragment();
-    const upcomingFrag = document.createDocumentFragment();
-
-    schedSnap.forEach(doc=>{
-      const d = doc.data();
-      const dt = new Date(d.datetime).getTime();
-      const end = dt + (2*60*60*1000);
-      const isFinished = now > end;
-      const isLive = now >= dt && now <= end;
-      const isUpcoming = dt > now;
-
-      const card = document.createElement("div");
-      card.className = "card";
-
-      // image
-      const img = document.createElement("img");
-      img.src = d.flyerUrl || d.flyer || (d.image) || "https://raw.githubusercontent.com/majidromadhon362-collab/madridforid-images/main/1000089950-removebg-preview%20(2).png";
-      img.loading = "lazy";
-      img.alt = d.match || "match";
-
-      // title
-      const title = document.createElement("h4");
-      title.style = "white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
-      title.textContent = d.match || "Match";
-
-      // meta & read
-      const small = document.createElement("small");
-      small.textContent = new Date(dt).toLocaleString("id-ID");
-
-      const scoreDiv = document.createElement("div");
-      scoreDiv.style = "font-weight:700;color:var(--gold);margin:6px 0";
-      scoreDiv.textContent = d.score || "- : -";
-
-      const read = document.createElement("a");
-      read.className = "btn-readmore";
-      read.href = `schedule-detail.html?id=${doc.id}`;
-      read.textContent = "Read More";
-
-      // append elements
-      card.appendChild(img);
-      card.appendChild(title);
-      card.appendChild(small);
-
-      if(isFinished){
-        card.appendChild(scoreDiv);
-        const editBtn = document.createElement("button");
-        editBtn.className = "editScoreBtn";
-        editBtn.dataset.id = doc.id;
-        editBtn.textContent = "Edit";
-        card.appendChild(editBtn);
-        recentFrag.appendChild(card);
-      } else {
-        if(isLive){
-          const liveBadge = document.createElement("span");
-          liveBadge.className = "live-badge";
-          liveBadge.textContent = "LIVE 🔴";
-          card.insertBefore(liveBadge, img);
-          card.appendChild(read);
-          upcomingFrag.appendChild(card);
-        } else if(isUpcoming){
-          const upBadge = document.createElement("span");
-          upBadge.className = "upcoming-badge";
-          upBadge.textContent = "UPCOMING";
-          card.insertBefore(upBadge, img);
-
-          // countdown small
-          const diff = Math.max(0, dt - now);
-          const days = Math.floor(diff / 86400000);
-          const hrs = Math.floor((diff % 86400000) / 3600000);
-          const mins = Math.floor((diff % 3600000) / 60000);
-          const cd = document.createElement("div");
-          cd.className = "countdown";
-          cd.textContent = `⏳ ${days}D ${hrs}H ${mins}M`;
-          card.appendChild(cd);
-
-          card.appendChild(read);
-          upcomingFrag.appendChild(card);
+    if(burger && mobile){
+      burger.onclick = ()=> mobile.classList.toggle("show");
+      document.addEventListener("click", (e)=>{
+        if(!mobile.contains(e.target) && !burger.contains(e.target)){
+          mobile.classList.remove("show");
         }
-      }
+      });
+    }
 
-    });
+    // sign button
+    const signBtn = document.getElementById("signBtn");
+    if(signBtn){
+      signBtn.onclick = async ()=>{
+        try{
+          if(auth.currentUser) await signOut(auth);
+          else await signInWithPopup(auth, provider);
+        }catch(err){
+          alert("Sign in/out gagal.");
+        }
+      };
+    }
 
-    recentBox.appendChild(recentFrag);
-    upcomingBox.appendChild(upcomingFrag);
-  })();
+    console.log("HEADER LOADED");
+    window.dispatchEvent(new Event("header-ready"));
 
-  /* ---------- GALLERY ---------- */
-  (function renderGallery(){
-    galleryBox.innerHTML = "";
-    const frag = document.createDocumentFragment();
-    gallerySnap.forEach(doc=>{
-      const d = doc.data();
-      const card = document.createElement("div");
-      card.className = "card";
-      const img = document.createElement("img");
-      img.src = d.imageUrl || d.url || "https://raw.githubusercontent.com/majidromadhon362-collab/madridforid-images/main/1000089950-removebg-preview%20(2).png";
-      img.loading = "lazy";
-      img.alt = d.subtitle || "gallery";
-      card.appendChild(img);
-      frag.appendChild(card);
-    });
-    galleryBox.appendChild(frag);
-  })();
-
-  // After render, make sure admin buttons visibility is correct (auth may not be ready yet)
-  // If auth already has user, show edit buttons
-  const isAdminNow = auth.currentUser && auth.currentUser.uid === ADMIN_UID;
-  document.querySelectorAll(".editScoreBtn").forEach(b=>b.style.display = isAdminNow ? "block" : "none");
-
-  // attach click handler on edit buttons (delegated)
-  document.querySelectorAll(".editScoreBtn").forEach(btn=>{
-    btn.addEventListener("click", (e)=>{
-      const id = e.target.dataset.id;
-      // open modal or navigate to schedule-detail with edit param
-      window.location.href = `schedule-detail.html?id=${id}&edit=1`;
-    });
-  });
-
+  }catch(err){
+    console.error("HEADER LOAD ERROR:", err);
+  }
 }
 
-/* =======================
-   AUTH STATE HANDLING
-   - Update header UI (sign text + avatar)
-   - Toggle admin buttons when auth changes
-   ======================= */
+// panggil duluan sebelum loadAll()
+loadHeader();
+
+/* ========= DOM REFS (Part 2 markup) ========= */
+const heroWrap = document.getElementById("heroWrap");
+const newsBox = document.getElementById("newsBox");
+const recentBox = document.getElementById("recentBox");
+const upcomingBox = document.getElementById("upcomingBox");
+const galleryBox = document.getElementById("galleryBox");
+
+// edit score modal controls
+const editBackdrop = document.getElementById("editScoreModalBackdrop");
+const modalMatchTitle = document.getElementById("modalMatchTitle");
+const scoreHomeInput = document.getElementById("scoreHomeInput");
+const scoreAwayInput = document.getElementById("scoreAwayInput");
+const scoreNote = document.getElementById("scoreNote");
+const cancelScoreBtn = document.getElementById("cancelScoreBtn");
+const saveScoreBtn = document.getElementById("saveScoreBtn");
+
+// gallery preview
+const photoPreviewBackdrop = document.getElementById("photoPreviewBackdrop");
+const photoPreviewImg = document.getElementById("photoPreviewImg");
+const closePhotoPreview = document.getElementById("closePhotoPreview");
+
+/* ========= STATE ========= */
+let currentEditDocId = null;
+let currentUser = null;
+
+/* ========= HEADER WIRING (robust) ========= */
+// Some pages inject header.html w/out scripts; listen for header-ready
+window.addEventListener("header-ready", ()=> {
+  // wire logo -> home (if header used different id, try common ones)
+  const logoEls = [document.getElementById("logoText"), document.querySelector(".brand-title")];
+  logoEls.forEach(el=>{
+    if(el){
+      el.style.cursor = "pointer";
+      el.onclick = ()=> window.location.href = "index.html";
+    }
+  });
+
+  // wire sign button if exists (on pages that strip header script)
+  const signBtn = document.getElementById("signBtn");
+  if(signBtn){
+    signBtn.onclick = async ()=>{
+      try{
+        if(auth.currentUser) await signOut(auth);
+        else await signInWithPopup(auth, provider);
+      }catch(err){
+        console.error("Sign error", err);
+        alert("Sign in/out gagal: "+ (err.message||err));
+      }
+    };
+  }
+
+  // burger wiring (if needed)
+  const burger = document.getElementById("burgerBtn");
+  const mobile = document.getElementById("mobileDropdown");
+  if(burger && mobile){
+    burger.onclick = ()=> mobile.classList.toggle("show");
+    document.addEventListener("click", (e)=>{
+      if(!mobile.contains(e.target) && !burger.contains(e.target)) mobile.classList.remove("show");
+    });
+  }
+});
+
+/* ========= AUTH UI ========= */
 onAuthStateChanged(auth, user=>{
-  // update header UI if exists
+  currentUser = user;
+  // header UI
   const signText = document.getElementById("signText");
   const avatarImg = document.getElementById("avatarImg");
   if(signText) signText.textContent = user ? "Logout" : "Sign In";
@@ -478,39 +436,322 @@ onAuthStateChanged(auth, user=>{
     else avatarImg.style.display = "none";
   }
 
-  // toggle edit buttons (if present)
-  const isAdmin = user && user.uid === ADMIN_UID;
-  document.querySelectorAll(".editScoreBtn").forEach(btn=> btn.style.display = isAdmin ? "block" : "none");
-});
-
-/* =======================
-   RUN when header ready
-   - header-ready is dispatched by header injection above
-   ======================= */
-window.addEventListener("header-ready", ()=>{
-  // load data
-  loadAll().catch(err=>console.error("loadAll err",err));
-});
-
-/* Also fallback to DOMContentLoaded (just in case) */
-document.addEventListener("DOMContentLoaded", ()=>{
-  setTimeout(()=>{
-    // if nothing loaded yet, try loading once
-    const boxes = document.querySelectorAll("#newsBox .card, #upcomingBox .card, #galleryBox .card");
-    if(boxes.length===0){
-      loadAll().catch(err=>console.error("loadAll fallback err",err));
-    }
-  }, 600);
-});
-
-// ===== SHOW EDIT HERO IF ADMIN =====
-onAuthStateChanged(auth, user=>{
+  // show/hide editHero button if present
   const editHeroBtn = document.getElementById("editHeroBtn");
-  if(editHeroBtn){
-    editHeroBtn.style.display = (user && user.uid === ADMIN_UID) ? "block" : "none";
+  if(editHeroBtn) editHeroBtn.style.display = (user && user.uid === ADMIN_UID) ? "block" : "none";
+
+  // show/hide edit buttons (if already rendered)
+  document.querySelectorAll(".editScoreBtn").forEach(btn=>{
+    btn.style.display = (user && user.uid === ADMIN_UID) ? "block" : "none";
+  });
+});
+
+/* ========= LOAD ALL (fast, parallel) ========= */
+async function loadAll(){
+  // placeholders to keep UI responsive
+  newsBox.innerHTML = `<div class="card" style="min-width:200px;padding:12px;color:#bbb;">Loading news...</div>`;
+  upcomingBox.innerHTML = `<div class="card" style="min-width:200px;padding:12px;color:#bbb;">Loading schedule...</div>`;
+  recentBox.innerHTML = `<div class="card" style="min-width:200px;padding:12px;color:#bbb;">Loading results...</div>`;
+  galleryBox.innerHTML = `<div class="card" style="min-width:200px;padding:12px;color:#bbb;">Loading gallery...</div>`;
+
+  try{
+    const qHero    = getDocs(collection(db,"home_hero"));
+    const qNews    = getDocs(query(collection(db,"news"), orderBy("createdAt","desc"), limit(8)));
+    const qSched   = getDocs(query(collection(db,"schedule"), orderBy("datetime","asc"), limit(50)));
+    const qGallery = getDocs(query(collection(db,"gallery"), orderBy("createdAt","desc"), limit(12)));
+
+    const [heroSnap, newsSnap, schedSnap, gallerySnap] = await Promise.all([qHero, qNews, qSched, qGallery]);
+
+    renderHero(heroSnap);
+    renderNews(newsSnap);
+    renderSchedule(schedSnap);
+    renderGallery(gallerySnap);
+
+  }catch(err){
+    console.error("loadAll error:", err);
+    // graceful fallback
+    newsBox.innerHTML = `<div class="card" style="min-width:200px;padding:12px;color:#ffb3b3;">Failed to load</div>`;
+    upcomingBox.innerHTML = "";
+    recentBox.innerHTML = "";
+    galleryBox.innerHTML = "";
+  }
+}
+
+/* ========= RENDER HELPERS ========= */
+function renderHero(snapshot){
+  heroWrap.innerHTML = `<button id="editHeroBtn" style="display:none;">✎ Edit Hero</button>`;
+  const urls = [];
+  snapshot.forEach(d => { const data = d.data(); if(data && data.url) urls.push(data.url); });
+  if(urls.length === 0) return;
+  urls.forEach((u,i)=>{
+    const img = document.createElement("img");
+    img.className = "slide";
+    img.loading = "lazy";
+    img.src = u;
+    img.alt = `hero-${i}`;
+    heroWrap.appendChild(img);
+  });
+  const slides = heroWrap.querySelectorAll(".slide");
+  if(slides.length){
+    slides[0].classList.add("active");
+    let idx = 0;
+    setInterval(()=>{
+      slides[idx].classList.remove("active");
+      idx = (idx+1) % slides.length;
+      slides[idx].classList.add("active");
+    }, 4000);
+  }
+}
+
+function renderNews(snapshot){
+  newsBox.innerHTML = "";
+  const frag = document.createDocumentFragment();
+  snapshot.forEach(docSnap=>{
+    const d = docSnap.data();
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <img src="${d.image || ''}" alt="${escapeHtml(d.title||'news')}">
+      <h4 style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(d.title||'Untitled')}</h4>
+      <a class="btn-readmore" href="news-detail.html?id=${docSnap.id}">Read More</a>
+    `;
+    frag.appendChild(card);
+  });
+  newsBox.appendChild(frag);
+}
+
+function renderSchedule(snapshot){
+  const now = Date.now();
+  recentBox.innerHTML = "";
+  upcomingBox.innerHTML = "";
+  const recFrag = document.createDocumentFragment();
+  const upFrag = document.createDocumentFragment();
+
+  snapshot.forEach(docSnap=>{
+    const docData = docSnap.data();
+    const dt = new Date(docData.datetime).getTime();
+    const end = dt + 2*60*60*1000;
+    const isFinished = now > end;
+    const isLive = now >= dt && now <= end;
+    const isUpcoming = dt > now;
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const img = document.createElement("img");
+    img.src = docData.flyerUrl || docData.flyer || (docData.image || "");
+    img.loading = "lazy";
+    img.alt = docData.match || "match";
+
+    const title = document.createElement("h4");
+    title.style = "white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
+    title.textContent = docData.match || "Match";
+
+    const time = document.createElement("small");
+    time.textContent = new Date(dt).toLocaleString("id-ID");
+
+    card.appendChild(img);
+    card.appendChild(title);
+    card.appendChild(time);
+
+    if(isFinished){
+      const scoreDiv = document.createElement("div");
+      scoreDiv.style = "font-weight:700;color:var(--gold);margin:6px 0";
+      scoreDiv.textContent = docData.score || "- : -";
+      card.appendChild(scoreDiv);
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "editScoreBtn";
+      editBtn.dataset.id = docSnap.id;
+      editBtn.textContent = "Edit";
+      // show only if current user is admin; visibility toggled by auth listener as well
+      editBtn.style.display = (currentUser && currentUser.uid === ADMIN_UID) ? "block" : "none";
+
+      // OPEN modal instead of navigating
+      editBtn.onclick = ()=> openEditModal(docSnap.id);
+      card.appendChild(editBtn);
+
+      recFrag.appendChild(card);
+    } else {
+      const badge = document.createElement("span");
+      badge.className = isLive ? "live-badge" : "upcoming-badge";
+      badge.textContent = isLive ? "LIVE 🔴" : "UPCOMING";
+      card.insertBefore(badge, img);
+
+      if(isUpcoming){
+        const diff = Math.max(0, dt - now);
+        const days = Math.floor(diff / 86400000);
+        const hrs = Math.floor((diff % 86400000) / 3600000);
+        const mins = Math.floor((diff % 3600000) / 60000);
+        const cd = document.createElement("div");
+        cd.className = "countdown";
+        cd.textContent = `⏳ ${days}D ${hrs}H ${mins}M`;
+        card.appendChild(cd);
+      }
+
+      const read = document.createElement("a");
+      read.className = "btn-readmore";
+      read.href = `schedule-detail.html?id=${docSnap.id}`;
+      read.textContent = "Read More";
+      card.appendChild(read);
+
+      upFrag.appendChild(card);
+    }
+  });
+
+  recentBox.appendChild(recFrag);
+  upcomingBox.appendChild(upFrag);
+}
+
+function renderGallery(snapshot){
+  galleryBox.innerHTML = "";
+  const frag = document.createDocumentFragment();
+  snapshot.forEach(docSnap=>{
+    const d = docSnap.data();
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <img src="${d.imageUrl || d.url || ''}" alt="${escapeHtml(d.subtitle||'photo')}" loading="lazy">
+    `;
+    // attach click to open preview
+    card.querySelector("img").onclick = () => openPreview(d.imageUrl || d.url || "");
+    frag.appendChild(card);
+  });
+  galleryBox.appendChild(frag);
+}
+
+/* ========= EDIT SCORE MODAL ========== */
+function openEditModal(docId){
+  currentEditDocId = docId;
+  // open backdrop
+  editBackdrop.setAttribute("aria-hidden","false");
+  editBackdrop.style.display = "flex";
+
+  // load doc
+  (async ()=>{
+    try{
+      const dref = doc(db,"schedule",docId);
+      const snap = await getDoc(dref);
+      if(!snap.exists()){
+        alert("Data tidak ditemukan.");
+        closeEditModal();
+        return;
+      }
+      const data = snap.data();
+      modalMatchTitle.textContent = data.match || "-";
+      // try parse score if "2 - 1" or "2:1" or object; keep simple
+      let home="", away="";
+      if(typeof data.score === "string"){
+        const match = data.score.match(/(\d+)\s*[:\-]\s*(\d+)/);
+        if(match){ home = match[1]; away = match[2]; }
+      }
+      scoreHomeInput.value = home;
+      scoreAwayInput.value = away;
+      scoreNote.value = data.scoreNote || "";
+    }catch(err){
+      console.error("openEditModal err", err);
+      alert("Gagal buka match. "+ (err.message || err));
+      closeEditModal();
+    }
+  })();
+}
+
+function closeEditModal(){
+  currentEditDocId = null;
+  editBackdrop.setAttribute("aria-hidden","true");
+  editBackdrop.style.display = "none";
+  scoreHomeInput.value = "";
+  scoreAwayInput.value = "";
+  scoreNote.value = "";
+}
+
+/* Save score -> update Firestore */
+saveScoreBtn.onclick = async ()=>{
+  if(!currentEditDocId) return alert("No match selected.");
+  // sanitize numeric
+  const h = (scoreHomeInput.value||"").trim();
+  const a = (scoreAwayInput.value||"").trim();
+  if(h === "" || a === "" || isNaN(Number(h)) || isNaN(Number(a))) {
+    return alert("Masukkan angka score valid untuk kedua tim.");
+  }
+  const scoreStr = `${h} : ${a}`;
+  saveScoreBtn.disabled = true;
+  saveScoreBtn.textContent = "Saving...";
+  try{
+    const dref = doc(db,"schedule",currentEditDocId);
+    await updateDoc(dref, {
+      score: scoreStr,
+      scoreNote: scoreNote.value || "",
+      updatedAt: serverTimestamp()
+    });
+    // reflect change in UI quickly: find card and update its score text
+    document.querySelectorAll(".card").forEach(card=>{
+      const btn = card.querySelector(".editScoreBtn");
+      if(btn && btn.dataset.id === currentEditDocId){
+        const sdiv = card.querySelector("div[style*='color:var(--gold)']");
+        if(sdiv) sdiv.textContent = scoreStr;
+      }
+    });
+    alert("Score updated.");
+    closeEditModal();
+    // reload part of the UI to be safe
+    loadAll().catch(console.error);
+  }catch(err){
+    console.error("saveScore err", err);
+    alert("Gagal menyimpan: " + (err.message || err));
+  }finally{
+    saveScoreBtn.disabled = false;
+    saveScoreBtn.textContent = "Save Score";
+  }
+};
+
+cancelScoreBtn.onclick = closeEditModal;
+
+/* ========= GALLERY PREVIEW ========= */
+function openPhotoPreview(src){
+  photoPreviewImg.src = src;
+  photoPreviewBackdrop.style.display = "flex";
+  photoPreviewBackdrop.setAttribute("aria-hidden","false");
+}
+function closePhotoPreviewFn(){
+  photoPreviewBackdrop.style.display = "none";
+  photoPreviewBackdrop.setAttribute("aria-hidden","true");
+  photoPreviewImg.src = "";
+}
+closePhotoPreview.onclick = closePhotoPreviewFn;
+photoPreviewBackdrop.onclick = (e)=>{
+  if(e.target === photoPreviewBackdrop) closePhotoPreviewFn();
+};
+
+/* ========= UTIL ========= */
+function escapeHtml(s){
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ========= BIND KEY HANDLERS ========= */
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "Escape"){
+    // close modals
+    if(editBackdrop && editBackdrop.style.display === "flex") closeEditModal();
+    if(photoPreviewBackdrop && photoPreviewBackdrop.style.display === "flex") closePhotoPreviewFn();
   }
 });
-</script>
 
+/* ========= BOOTSTRAP ========= */
+window.addEventListener("header-ready", ()=> {
+  // load immediately once header is ready (header-ready fired by header injection)
+  loadAll().catch(err=>console.error("initial loadAll err",err));
+});
+
+// fallback if header-ready wasn't emitted
+document.addEventListener("DOMContentLoaded", ()=>{
+  setTimeout(()=>{
+    const boxes = document.querySelectorAll("#newsBox .card, #upcomingBox .card, #galleryBox .card");
+    if(boxes.length === 0) loadAll().catch(err=>console.error("fallback loadAll err",err));
+  }, 600);
+});
+</script>
 </body>
 </html>

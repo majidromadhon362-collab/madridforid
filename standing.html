@@ -1,200 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Standings | MadridForID</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="https://i.postimg.cc/J0krHM4b/1000089950-removebg-preview-2.png">
 
 <style>
-:root {
+:root{
   --gold:#ffd700;
   --navy:#0b1d3a;
   --navy-soft:#09152e;
   --gray:#1a2238;
   --white:#ffffff;
   --muted:#c8c8d0;
+  --danger:#e63946;
 }
 
-/* RESET */
-*{margin:0;padding:0;box-sizing:border-box}
-body {
-  margin: 0;
-  padding: 0;
-  font-family: "Poppins", sans-serif;
-  background: linear-gradient(180deg, #0b1d3a 0%, #09152e 100%);
-  min-height: 100vh;
-  overflow-x: hidden;
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Poppins",sans-serif;
+  background:linear-gradient(180deg,var(--navy),var(--navy-soft));
+  color:var(--muted);
+  min-height:100vh;
+  overflow-x:hidden;
 }
 .container{
-  max-width:950px;
-  margin:0 auto;
-  padding:20px;
+  max-width:950px;margin:0 auto;padding:20px;
 }
 
-/* TITLE */
+/* header placeholder spacing (in case header sticky) */
+.header-space{height:72px}
+
+/* title */
 .page-title{
-  font-size:1.5rem;
-  font-weight:700;
-  margin-bottom:14px;
+  font-size:1.6rem;font-weight:800;color:var(--white);margin-bottom:12px;
 }
 
-/* SELECT LEAGUE */
+/* controls */
+.controls{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
 .league-btn{
-  background:var(--gold);
-  border:0;
-  color:#000;
-  font-weight:700;
-  padding:10px 14px;
-  border-radius:10px;
-  cursor:pointer;
+  background:var(--gold);border:0;color:#000;font-weight:700;padding:10px 14px;border-radius:10px;cursor:pointer;
 }
+.sync-btn{
+  background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--white);padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:700;
+}
+.last-upd{color:var(--muted);font-size:.95rem}
 
-/* TABLE */
-.table-wrap{
-  background:rgba(255,255,255,0.05);
-  padding:14px;
-  border-radius:12px;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-}
+/* table */
+.table-wrap{background:rgba(255,255,255,0.03);padding:14px;border-radius:12px}
+table{width:100%;border-collapse:collapse}
 thead th{
-  padding:10px;
-  background:rgba(255,255,255,0.08);
+  padding:12px;text-align:center;background:rgba(255,255,255,0.06);color:var(--muted);font-weight:700;
 }
-tbody td{
-  padding:10px;
-  text-align:center;
-  color:var(--muted);
-}
-tbody tr:nth-child(even){
-  background:rgba(255,255,255,0.04);
-}
-tbody td.team{
-  text-align:left;
-  color:var(--white);
-}
+tbody td{padding:10px;text-align:center;color:var(--muted)}
+tbody tr:nth-child(even){background:rgba(255,255,255,0.02)}
+tbody td.team{text-align:left;color:var(--white);font-weight:600}
+#toggleTable{margin-top:12px;width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:var(--gold);cursor:pointer}
 
-/* VIEW ALL */
-#toggleTable{
-  margin-top:12px;
-  width:100%;
-  padding:8px;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,0.2);
-  background:transparent;
-  color:var(--gold);
-  cursor:pointer;
-}
-
-/* MODAL */
-.modal-bg{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.55);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:2000;
-}
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:none;align-items:center;justify-content:center;z-index:2200}
 .modal-bg.show{display:flex}
+.modal{background:#fff;color:#000;width:90%;max-width:420px;padding:20px;border-radius:12px}
+.opt{padding:12px;background:#eee;border-radius:8px;text-align:center;margin-top:10px;cursor:pointer;font-weight:700}
+.opt:hover{background:var(--gold);color:#000}
 
-.modal{
-  background:#fff;
-  color:#000;
-  width:90%;
-  max-width:420px;
-  padding:20px;
-  border-radius:12px;
-}
-.opt{
-  padding:14px;
-  background:#eee;
-  border-radius:8px;
-  font-weight:600;
-  cursor:pointer;
-  text-align:center;
-  margin-top:10px;
-}
-.opt:hover{
-  background:var(--gold);
-  color:#000;
+/* small */
+@media (max-width:640px){
+  .controls{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
-
 <body>
 
-<!-- HEADER INCLUDE -->
+<!-- HEADER include -->
 <div id="include-header"></div>
+<div class="header-space"></div>
 
 <div class="container">
-
   <h2 class="page-title">League Standings</h2>
 
-  <button id="chooseLeague" class="league-btn">Choose League</button>
-  <small id="lastUpdated" style="margin-left:10px;color:var(--muted)">Last updated: —</small>
+  <div class="controls">
+    <button id="chooseLeague" class="league-btn">Choose League</button>
+    <button id="syncBtn" class="sync-btn" title="Sync from API (admin only)" style="display:none">Sync</button>
+    <small id="lastUpdated" class="last-upd">Last updated: —</small>
+  </div>
 
-  <div class="table-wrap" style="margin-top:18px;">
-    <table>
+  <div class="table-wrap">
+    <table aria-live="polite">
       <thead>
         <tr>
-          <th>#</th>
+          <th style="width:56px">#</th>
           <th style="text-align:left">Team</th>
           <th>P</th>
           <th>GD</th>
           <th>Pts</th>
         </tr>
       </thead>
-
-      <tbody id="standBody"></tbody>
+      <tbody id="standBody">
+        <tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">Loading...</td></tr>
+      </tbody>
     </table>
   </div>
 
   <button id="toggleTable">Show All</button>
-
 </div>
 
-<!-- MODAL -->
-<div id="leagueModal" class="modal-bg">
-  <div class="modal">
-    <strong>Select League</strong>
+<!-- League modal -->
+<div id="leagueModal" class="modal-bg" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Choose league">
+    <strong style="display:block;margin-bottom:8px">Select League</strong>
     <div class="opt" data-league="laliga">🇪🇸 La Liga</div>
     <div class="opt" data-league="ucl">⭐ Champions League</div>
     <div class="opt" data-league="copa">🏆 Copa del Rey</div>
+    <div style="margin-top:10px;font-size:.85rem;color:#666">Or press Sync and input competition code (e.g. PD, CL)</div>
   </div>
 </div>
 
+<!-- footer spacing -->
+<div style="height:40px"></div>
+
 <script type="module">
-/* ============= Inject Header ============= */
-(async()=>{
+/* ===========================
+   Header inject (strip scripts) - robust
+   =========================== */
+(async ()=>{
   try{
     const res = await fetch("header.html?cb="+Date.now());
     const html = await res.text();
     const container = document.getElementById("include-header");
-    container.innerHTML = html;
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
 
-    // jalankan ulang script di header
-    container.querySelectorAll("script").forEach(old=>{
-      const s=document.createElement("script");
-      if(old.type)s.type=old.type;
-      if(old.src)s.src=old.src;
-      else s.textContent=old.textContent;
-      document.body.appendChild(s);
-      old.remove();
-    });
+    // remove any script tags so header won't re-init firebase twice
+    tmp.querySelectorAll("script").forEach(s=>s.remove());
+    container.innerHTML = tmp.innerHTML;
 
+    // wire burger/menu basic toggles if header has these elements (some pages strip scripts)
+    const burger = document.getElementById("burgerBtn");
+    const mobile = document.getElementById("mobileDropdown");
+    if(burger && mobile){
+      burger.addEventListener("click", ()=> mobile.classList.toggle("show"));
+      document.addEventListener("click", (e)=>{
+        if(!mobile.contains(e.target) && !burger.contains(e.target)) mobile.classList.remove("show");
+      });
+    }
+
+    // emit ready (our page will also do firebase init)
     window.dispatchEvent(new Event("header-ready"));
-  }catch(e){console.error("Header load error:",e);}
+  }catch(err){
+    console.error("header load failed", err);
+    window.dispatchEvent(new Event("header-ready"));
+  }
 })();
 
-/* ============= Firebase ============= */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+/* ===========================
+   Firebase + Firestore init
+   - safe init: only call initializeApp if not initialized
+   =========================== */
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
@@ -204,106 +172,237 @@ const firebaseConfig = {
   messagingSenderId:"882098167537",
   appId:"1:882098167537:web:acf50819e9c81adaad1350"
 };
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
-/* ============= DOM ============= */
+// initialize if not already
+if(getApps().length === 0){
+  initializeApp(firebaseConfig);
+}
+const db = getFirestore();
+const auth = getAuth();
+const provider = new GoogleAuthProvider();
+
+/* ===========================
+   DOM Refs
+   =========================== */
 const tbody = document.getElementById("standBody");
 const toggleTable = document.getElementById("toggleTable");
 const chooseLeague = document.getElementById("chooseLeague");
 const leagueModal = document.getElementById("leagueModal");
 const lastUpdated = document.getElementById("lastUpdated");
+const syncBtn = document.getElementById("syncBtn");
 
 let fullRows = [];
 let showingAll = false;
-let currentLeague = "laliga";
+let currentLeague = "laliga"; // doc id in Firestore: 'laliga', 'ucl', 'copa'
+const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
 
-/* ============= Helpers ============= */
-function toDateSafe(v){
-  if(!v)return null;
-  if(typeof v.toDate==="function")return v.toDate();
-  if(v.seconds)return new Date(v.seconds*1000);
-  const d=new Date(v);
-  return isNaN(d.getTime())?null:d;
-}
+/* ========= football-data token (user provided) =========
+   If you prefer not to embed token, remove below and
+   we'll prompt for it at Sync time.
+   (User gave token earlier; included for convenience)
+*/
+const FOOTBALL_DATA_TOKEN = "43b77d08fd35475aa2983d9986949fb2";
 
+/* ============= helpers ============= */
 function renderRows(rows){
-  if(!rows.length){
-    tbody.innerHTML = `<tr><td colspan="5" style="color:#bbb">No data</td></tr>`;
+  if(!rows || rows.length === 0){
+    tbody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px">No data</td></tr>`;
     return;
   }
-
   tbody.innerHTML = rows.map(r=>`
     <tr>
-      <td>${r.pos}</td>
-      <td class="team">${String(r.team).replace(/</g,"&lt;")}</td>
-      <td>${r.played}</td>
-      <td>${r.gd}</td>
-      <td>${r.pts}</td>
+      <td style="font-weight:700">${escapeHtml(String(r.pos))}</td>
+      <td class="team">${escapeHtml(r.team)}</td>
+      <td>${escapeHtml(String(r.played ?? r.p ?? r.games ?? "-"))}</td>
+      <td>${escapeHtml(String(r.gd ?? r.goalDifference ?? "-"))}</td>
+      <td style="font-weight:800">${escapeHtml(String(r.pts ?? r.points ?? "-"))}</td>
     </tr>
   `).join("");
 }
 
-/* ============= Load Standings ============= */
-async function loadStandings(league){
-  tbody.innerHTML = `<tr><td colspan="5" style="color:#ccc">Loading...</td></tr>`;
-
-  const ref = doc(db,"standings",league);
-  const snap = await getDoc(ref);
-
-  if(!snap.exists()){
-    fullRows=[];
-    renderRows([]);
-    lastUpdated.textContent="Last updated: —";
-    return;
-  }
-
-  const data = snap.data();
-  fullRows = data.rows || [];
-
-  // sort
-  fullRows = fullRows.map((r,i)=>({pos:r.pos ?? (i+1),...r}));
-
-  renderRows(fullRows.slice(0,5));
-
-  const d = toDateSafe(data.updatedAt) || new Date();
-  lastUpdated.textContent = "Last updated: " + d.toLocaleString();
-
-  showingAll = false;
-  toggleTable.textContent = "Show All";
+function escapeHtml(s){
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
-/* ============= Toggle Show All ============= */
-toggleTable.onclick = ()=>{
+function toDateSafe(v){
+  if(!v) return null;
+  if(typeof v.toDate === "function") return v.toDate();
+  if(v.seconds) return new Date(v.seconds * 1000);
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+/* ============= load from Firestore ============= */
+async function loadStandings(league){
+  tbody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px">Loading...</td></tr>`;
+  try{
+    const ref = doc(db,"standings",league);
+    const snap = await getDoc(ref);
+    if(!snap.exists()){
+      fullRows = [];
+      renderRows([]);
+      lastUpdated.textContent = "Last updated: —";
+      return;
+    }
+    const data = snap.data();
+    fullRows = (data.rows || []).map((r,i)=>({
+      pos: r.pos ?? (i+1),
+      team: r.team,
+      played: r.played ?? r.p ?? r.games,
+      gd: r.gd ?? r.goalDifference,
+      pts: r.pts ?? r.points
+    }));
+    renderRows(fullRows.slice(0,5));
+    const d = toDateSafe(data.updatedAt) || new Date();
+    lastUpdated.textContent = "Last updated: " + d.toLocaleString();
+    showingAll = false;
+    toggleTable.textContent = "Show All";
+  }catch(err){
+    console.error("loadStandings err", err);
+    tbody.innerHTML = `<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:18px">Failed to load</td></tr>`;
+    lastUpdated.textContent = "Last updated: —";
+  }
+}
+
+/* ============= toggle show all ============= */
+toggleTable.addEventListener("click", ()=>{
   if(showingAll){
     renderRows(fullRows.slice(0,5));
-    toggleTable.textContent="Show All";
-    showingAll=false;
+    toggleTable.textContent = "Show All";
+    showingAll = false;
   } else {
     renderRows(fullRows);
-    toggleTable.textContent="Show Less";
-    showingAll=true;
+    toggleTable.textContent = "Show Less";
+    showingAll = true;
   }
-};
-
-/* ============= Modal League Picker ============= */
-chooseLeague.onclick=()=>leagueModal.classList.add("show");
-leagueModal.onclick=e=>{ if(e.target===leagueModal) leagueModal.classList.remove("show"); };
-document.querySelectorAll(".opt").forEach(o=>{
-  o.onclick=()=>{
-    currentLeague=o.dataset.league;
-    chooseLeague.textContent = o.textContent+" ▾";
-    leagueModal.classList.remove("show");
-    loadStandings(currentLeague);
-  };
 });
 
-/* ============= Initial Load ============= */
-window.addEventListener("header-ready",()=>loadStandings(currentLeague));
+/* ============= modal league picker ============= */
+chooseLeague.addEventListener("click", ()=> {
+  leagueModal.classList.add("show");
+  leagueModal.setAttribute("aria-hidden","false");
+});
+leagueModal.addEventListener("click", (e)=>{
+  if(e.target === leagueModal) {
+    leagueModal.classList.remove("show");
+    leagueModal.setAttribute("aria-hidden","true");
+  }
+});
+document.querySelectorAll("#leagueModal .opt").forEach(o=>{
+  o.addEventListener("click", ()=>{
+    currentLeague = o.dataset.league;
+    chooseLeague.textContent = o.textContent + " ▾";
+    leagueModal.classList.remove("show");
+    leagueModal.setAttribute("aria-hidden","true");
+    loadStandings(currentLeague);
+  });
+});
 
-// Fallback load
-setTimeout(()=>{ if(!tbody.innerHTML.trim()) loadStandings(currentLeague); },500);
+/* ============= AUTH & UI (sign in / admin) ============= */
+onAuthStateChanged(auth, user=>{
+  // header elements update (header.html may contain signBtn, signText, avatarImg)
+  const signText = document.getElementById("signText");
+  const signBtn = document.getElementById("signBtn");
+  const avatarImg = document.getElementById("avatarImg");
+  if(signText) signText.textContent = user ? "Logout" : "Sign In";
+  if(avatarImg){
+    if(user){ avatarImg.src = user.photoURL || ""; avatarImg.style.display = "block"; }
+    else avatarImg.style.display = "none";
+  }
+  // wire signBtn click (if header script was stripped)
+  if(signBtn){
+    signBtn.onclick = async ()=>{
+      if(auth.currentUser) await signOut(auth);
+      else await signInWithPopup(auth, provider);
+    };
+  }
+
+  // show sync if admin
+  if(user && user.uid === ADMIN_UID){
+    syncBtn.style.display = "inline-block";
+  } else {
+    syncBtn.style.display = "none";
+  }
+});
+
+/* ============= SYNC from football-data.org (admin only) =============
+   Clicking Sync will:
+   - prompt for competition code (default 'PD' for LaLiga)
+   - fetch v4 standings from football-data.org
+   - transform into rows and save into Firestore at doc `standings/{league}`
+   - re-render UI
+
+   NOTE: Firestore rules allow write only for admin UID (so must be logged in).
+   If you want auto mappings (laliga -> PD, ucl->CL, copa->?), we can add later.
+*/
+syncBtn.addEventListener("click", async ()=>{
+  if(!auth.currentUser || auth.currentUser.uid !== ADMIN_UID){
+    return alert("Sync hanya untuk admin (login dulu).");
+  }
+
+  let comp = prompt("Enter competition code for football-data.org (e.g. PD for LaLiga, CL for UCL):", "PD");
+  if(!comp) return;
+
+  syncBtn.disabled = true;
+  syncBtn.textContent = "Syncing...";
+
+  try{
+    // build request
+    const url = `https://api.football-data.org/v4/competitions/${encodeURIComponent(comp)}/standings`;
+    const headers = { "X-Auth-Token": FOOTBALL_DATA_TOKEN };
+
+    const resp = await fetch(url, { headers });
+    if(!resp.ok){
+      const txt = await resp.text();
+      throw new Error(`API error ${resp.status}: ${txt}`);
+    }
+    const data = await resp.json();
+
+    // find the table (usually 'standings' array, type 'TOTAL')
+    const table = (data.standings || []).find(s => s.type === "TOTAL") || (data.standings && data.standings[0]) || null;
+    if(!table || !table.table){
+      throw new Error("No standings table found in API response.");
+    }
+
+    const rows = table.table.map((r,i)=>({
+      pos: r.position ?? (i+1),
+      team: r.team?.name || r.team?.shortName || r.team?.id || "Unknown",
+      played: r.playedGames ?? r.played ?? r.p,
+      gd: (r.goalDifference ?? (r.goalsFor - (r.goalsAgainst || 0))) ?? 0,
+      pts: r.points ?? r.pts ?? 0
+    }));
+
+    // save into firestore doc for the chosen currentLeague
+    const docRef = doc(db, "standings", currentLeague);
+    await setDoc(docRef, {
+      rows,
+      updatedAt: new Date(),
+      source: `football-data.org:${comp}`
+    });
+
+    alert("Sync successful, saved to Firestore.");
+    // reload local view
+    loadStandings(currentLeague);
+  }catch(err){
+    console.error("Sync error:", err);
+    alert("Sync failed: " + (err.message || err));
+  }finally{
+    syncBtn.disabled = false;
+    syncBtn.textContent = "Sync";
+  }
+});
+
+/* ============= Boot / initial load ============= */
+window.addEventListener("header-ready", ()=> {
+  // initial render: chooseLeague label set to default league
+  const initialLabel = { laliga: "🇪🇸 La Liga", ucl: "⭐ Champions League", copa: "🏆 Copa del Rey" }[currentLeague] || "Choose League";
+  chooseLeague.textContent = initialLabel + " ▾";
+  loadStandings(currentLeague);
+});
+
+// fallback load if header-ready not fired
+setTimeout(()=>{ if(!tbody.innerHTML.trim() || tbody.innerHTML.includes("Loading")) loadStandings(currentLeague); }, 800);
+
 </script>
-
 </body>
 </html>

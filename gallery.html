@@ -67,7 +67,7 @@
     .card{
       background:rgba(255,255,255,0.05);
       border-radius:12px;overflow:hidden;
-      transition:transform .18s;position:relative
+      transition:transform .18s;position:relative;cursor:pointer;
     }
     .card:hover{transform:translateY(-5px)}
 
@@ -120,6 +120,62 @@
       margin-top:14px;
       font-weight:600;
     }
+    
+    /* ===== FULLSCREEN PREVIEW ===== */
+    .gallery-preview-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      animation: fadeIn .2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; } 
+      to { opacity: 1; }
+    }
+
+    .gallery-preview-card {
+      position: relative;
+      width: 90%;
+      max-width: 900px;
+      background: transparent;
+      border-radius: 14px;
+    }
+
+    .gallery-preview-wrapper {
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 */
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .gallery-preview-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .close-preview-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 6px 10px;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
   </style>
 </head>
 
@@ -136,9 +192,11 @@
       const tmp = document.createElement("div");
       tmp.innerHTML = html;
 
+      // remove scripts (we wire header locally)
       tmp.querySelectorAll("script").forEach(s=>s.remove());
       box.innerHTML = tmp.innerHTML;
 
+      // basic header wiring (burger/sign)
       const burger = document.getElementById("burgerBtn");
       const mobile = document.getElementById("mobileDropdown");
       const signBtn = document.getElementById("signBtn");
@@ -164,14 +222,14 @@
       <div style="display:flex;gap:12px;align-items:center">
         <div class="category-select">
           <div id="selectDisplay" class="select-display">All categories ▼</div>
-          <div id="selectOptions" class="select-options">
-            <div data-val="all">All categories</div>
-            <div data-val="Matchday">Matchday</div>
-            <div data-val="Training">Training</div>
-            <div data-val="Press Conference">Press Conference</div>
-            <div data-val="Celebration">Celebration</div>
-            <div data-val="Other">Other</div>
-            </div>
+          <div id="selectOptions" class="select-options" role="listbox" tabindex="-1">
+            <div data-val="all" role="option">All categories</div>
+            <div data-val="Matchday" role="option">Matchday</div>
+            <div data-val="Training" role="option">Training</div>
+            <div data-val="Press Conference" role="option">Press Conference</div>
+            <div data-val="Celebration" role="option">Celebration</div>
+            <div data-val="Other" role="option">Other</div>
+          </div>
         </div>
 
         <button id="addBtn" class="btn" style="display:none;">＋ Add Photo</button>
@@ -180,7 +238,7 @@
 
     <div id="errorMsg"></div>
 
-    <div id="galleryGrid" class="gallery-grid"></div>
+    <div id="galleryGrid" class="gallery-grid" aria-live="polite"></div>
 
     <button id="loadMoreBtn"
       class="btn ghost"
@@ -190,9 +248,9 @@
   </main>
 
   <!-- ADD PHOTO MODAL -->
-  <div id="overlay" class="overlay">
-    <div class="form-card">
-      <h3 style="text-align:center;margin-bottom:10px;">＋ Add Photo</h3>
+  <div id="overlay" class="overlay" aria-hidden="true">
+    <div class="form-card" role="dialog" aria-modal="true" aria-labelledby="addPhotoTitle">
+      <h3 id="addPhotoTitle" style="text-align:center;margin-bottom:10px;">＋ Add Photo</h3>
 
       <div class="form-group">
         <label>Category</label>
@@ -213,13 +271,23 @@
       <div class="form-group">
         <label>Upload Image</label>
         <input id="fileInput" type="file" accept="image/*" />
-        <div id="cropArea"><img id="cropImg"></div>
+        <div id="cropArea"><img id="cropImg" alt="crop preview"></div>
         <button id="cropBtn" class="btn" style="display:none;margin-top:8px;">Crop (16:9)</button>
       </div>
 
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px;">
         <button id="saveBtn" class="btn">Upload</button>
         <button id="cancelBtn" class="btn ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- FULLSCREEN PHOTO PREVIEW -->
+  <div id="galleryPreview" class="gallery-preview-backdrop" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="gallery-preview-card">
+      <div class="gallery-preview-wrapper">
+        <img id="galleryPreviewImg" class="gallery-preview-img" src="" alt="Preview">
+        <button id="closePreviewBtn" class="close-preview-btn" aria-label="Close preview">Close</button>
       </div>
     </div>
   </div>
@@ -259,6 +327,45 @@ const db  = getFirestore(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+/* ------------------ FIX: HEADER SIGN IN/OUT 100% ------------------ */
+
+window.addEventListener("header-ready", () => {
+  const signBtn  = document.getElementById("signBtn");
+  const signText = document.getElementById("signText");
+  const avatarImg = document.getElementById("avatarImg");
+
+  if (!signBtn) return;
+
+  // Bind sign button
+  signBtn.onclick = async () => {
+    try {
+      if (auth.currentUser) {
+        await signOut(auth);
+      } else {
+        await signInWithPopup(auth, provider);
+      }
+    } catch (err) {
+      console.error("Auth error:", err);
+      alert("Sign In gagal: " + (err.message || err));
+    }
+  };
+
+  // Update UI if user already logged in
+  onAuthStateChanged(auth, (user) => {
+    if (signText) {
+      signText.textContent = user ? "Logout" : "Sign In";
+    }
+    if (avatarImg) {
+      if (user) {
+        avatarImg.src = user.photoURL || "";
+        avatarImg.style.display = "block";
+      } else {
+        avatarImg.style.display = "none";
+      }
+    }
+  });
+});
+
 /* ----------------------------- DOM ELEMENTS ------------------------------ */
 
 const grid = document.getElementById("galleryGrid");
@@ -278,6 +385,10 @@ const cropBtn  = document.getElementById("cropBtn");
 const saveBtn  = document.getElementById("saveBtn");
 const catInput = document.getElementById("catInput");
 const subInput = document.getElementById("subInput");
+
+const previewBackdrop = document.getElementById("galleryPreview");
+const previewImg = document.getElementById("galleryPreviewImg");
+const closePreviewBtn = document.getElementById("closePreviewBtn");
 
 let cropper = null;
 let currentUser = null;
@@ -301,6 +412,7 @@ selectOptions.querySelectorAll("div").forEach(opt=>{
 /* ----------------------------- OPEN ADD PHOTO MODAL ------------------------------ */
 addBtn.onclick = ()=>{
   overlay.classList.add("show");
+  overlay.setAttribute("aria-hidden", "false");
   fileInput.value = "";
   subInput.value = "";
   cropArea.style.display = "none";
@@ -309,12 +421,16 @@ addBtn.onclick = ()=>{
 };
 
 /* CLOSE MODAL */
-cancelBtn.onclick = ()=> overlay.classList.remove("show");
+cancelBtn.onclick = ()=> {
+  overlay.classList.remove("show");
+  overlay.setAttribute("aria-hidden", "true");
+};
 
 /* CLOSE MODAL WHEN CLICK OUTSIDE */
 overlay.onclick = (e)=>{
   if(e.target === overlay){
     overlay.classList.remove("show");
+    overlay.setAttribute("aria-hidden", "true");
   }
 };
 
@@ -329,24 +445,16 @@ async function loadGallery(reset = false){
 
     errorMsg.textContent = "Loading...";
 
-    let q;
-
+    // build constraints
+    const constraints = [];
     if(currentCategory !== "all"){
-      q = query(
-        collection(db,"gallery"),
-        where("category","==",currentCategory),
-        orderBy("createdAt","desc"),
-        limit(PAGE_LIMIT),
-        ...(lastVisible ? [startAfter(lastVisible)] : [])
-      );
-    } else {
-      q = query(
-        collection(db,"gallery"),
-        orderBy("createdAt","desc"),
-        limit(PAGE_LIMIT),
-        ...(lastVisible ? [startAfter(lastVisible)] : [])
-      );
+      constraints.push(where("category","==",currentCategory));
     }
+    constraints.push(orderBy("createdAt","desc"));
+    constraints.push(limit(PAGE_LIMIT));
+    if(lastVisible) constraints.push(startAfter(lastVisible));
+
+    const q = query(collection(db,"gallery"), ...constraints);
 
     const snap = await getDocs(q);
 
@@ -368,31 +476,40 @@ async function loadGallery(reset = false){
 
       const img = document.createElement("img");
       img.loading = "lazy";
-      img.src = d.imageUrl;
+      img.src = d.imageUrl || d.url || "";
+      img.alt = d.subtitle || "photo";
       img.onload = ()=> img.classList.add("loaded");
 
+      // NOTE: do NOT attach click here; use delegated listener on grid for performance
       thumb.appendChild(img);
       card.appendChild(thumb);
 
       card.insertAdjacentHTML("beforeend", `
         <div class="meta">
-          <span class="category">${d.category}</span>
-          <p>${d.subtitle || ""}</p>
+          <span class="category">${escapeHtml(d.category||"")}</span>
+          <p>${escapeHtml(d.subtitle||"")}</p>
         </div>
       `);
 
-      if(currentUser && currentUser.uid === ADMIN_UID){
-        const del = document.createElement("button");
-        del.className = "delete-btn";
-        del.textContent = "🗑 Delete";
-        del.onclick = async()=>{
-          if(confirm("Delete photo?")){
-            await deleteDoc(doc(db,"gallery",docSnap.id));
-            loadGallery(true);
-          }
-        };
-        card.appendChild(del);
-      }
+      // add delete button only for admin (we'll show/hide based on currentUser)
+      const delBtn = document.createElement("button");
+      delBtn.className = "delete-btn";
+      delBtn.textContent = "🗑 Delete";
+      delBtn.dataset.id = docSnap.id;
+      delBtn.style.display = (currentUser && currentUser.uid === ADMIN_UID) ? "inline-block" : "none";
+      // stop propagation so clicking delete won't open preview
+      delBtn.addEventListener("click", async (ev)=>{
+        ev.stopPropagation();
+        if(!confirm("Delete photo?")) return;
+        try{
+          await deleteDoc(doc(db,"gallery",docSnap.id));
+          loadGallery(true);
+        }catch(err){
+          console.error("delete gallery err", err);
+          alert("Gagal hapus: "+(err.message||err));
+        }
+      });
+      card.appendChild(delBtn);
 
       grid.appendChild(card);
     });
@@ -444,7 +561,7 @@ async function getGhTokenPrompt(){
   let token = localStorage.getItem('gh_token');
   if(token) return token;
 
-  token = prompt("Enter GitHub Token:");
+  token = prompt("Enter GitHub Token (repo scope):");
   if(token){
     token = token.trim();
     localStorage.setItem('gh_token', token);
@@ -490,7 +607,7 @@ async function uploadToGitHub(file){
     console.error("FULL GITHUB ERROR:", txt);
     localStorage.removeItem("gh_token");
     throw new Error("GitHub upload failed: " + txt);
-}
+  }
 
   return `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${path}`;
 }
@@ -516,6 +633,7 @@ saveBtn.onclick = async()=>{
 
     alert("Photo added!");
     overlay.classList.remove("show");
+    overlay.setAttribute("aria-hidden", "true");
     fileInput.value = "";
     cropArea.style.display = "none";
     cropBtn.style.display = "none";
@@ -553,6 +671,11 @@ onAuthStateChanged(auth, user=>{
       else await signInWithPopup(auth, provider);
     };
   }
+
+  // show delete buttons if grid already rendered
+  document.querySelectorAll(".delete-btn").forEach(b=>{
+    b.style.display = (user && user.uid === ADMIN_UID) ? "inline-block" : "none";
+  });
 });
 
 /* ----------------------------- INIT ------------------------------ */
@@ -562,7 +685,50 @@ window.addEventListener("header-ready", ()=> loadGallery(true));
 document.addEventListener("DOMContentLoaded", ()=>{
   if(window._headerReady) loadGallery(true);
 });
-</script>
+
+/* === GALLERY PREVIEW (delegated + safe) === */
+
+grid.addEventListener("click", (e)=>{
+  // 1) If clicked delete button: handler already attached per-button (we stopPropagation there)
+  const del = e.target.closest('.delete-btn');
+  if(del) return; // delete handled by its own listener
+
+  // 2) If clicked image inside a .thumb -> open preview
+  const img = e.target.closest('.thumb img');
+  if(img){
+    openPreview(img.src);
+  }
+});
+
+// open preview
+function openPreview(src) {
+  previewImg.src = src;
+  previewBackdrop.style.display = "flex";
+  previewBackdrop.setAttribute("aria-hidden","false");
+  document.body.style.overflow = "hidden";
+}
+
+// close preview
+function closePreview() {
+  previewBackdrop.style.display = "none";
+  previewBackdrop.setAttribute("aria-hidden","true");
+  previewImg.src = "";
+  document.body.style.overflow = "";
+}
+
+closePreviewBtn.onclick = closePreview;
+previewBackdrop.onclick = (e) => {
+  if (e.target === previewBackdrop) closePreview();
+};
+
+/* ----------------------------- UTIL ------------------------------ */
+function escapeHtml(s){
+  return String(s||"")
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+  </script>
 
 </body>
 </html>

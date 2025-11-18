@@ -4,250 +4,264 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MadridForID | Schedule Detail</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
     :root {
-      --gold: #ffd700;
-      --navy: #0b1d3a;
-      --navy-soft: #10254d;
-      --gray: #1a2238;
-      --white: #ffffff;
-      --red: #e63946;
+      --gold:#ffd700;
+      --navy:#0b1d3a;
+      --gray:#1a2238;
+      --white:#ffffff;
+      --red:#e63946;
     }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; overflow-x: hidden; }
-    body {
-      font-family: "Poppins", sans-serif;
-      background: linear-gradient(180deg, var(--navy) 0%, var(--navy-soft) 100%);
-      color: var(--white);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      font-family:"Poppins",sans-serif;
+      background:linear-gradient(180deg,#0b1d3a,#10254d);
+      color:#fff;
+      min-height:100vh;
     }
-
-    main {
-      flex: 1;
-      width: 100%;
-      max-width: 900px;
-      margin: 30px auto;
-      padding: 20px;
+    main{
+      max-width:900px;
+      margin:30px auto;
+      padding:20px;
     }
-
-    .flyer-box {
-      border: 2px solid var(--gold);
-      border-radius: 12px;
-      padding: 10px;
-      text-align: center;
-      margin-bottom: 25px;
-      background: var(--gray);
-      color: var(--white);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    .flyer-box{
+      background:var(--gray);
+      padding:10px;
+      border-radius:12px;
+      margin-bottom:20px;
+      border:2px solid var(--gold);
+      text-align:center;
     }
-    .flyer-box img {
-      width: 100%;
-      border-radius: 10px;
+    .flyer-box img{width:100%;border-radius:10px;}
+    .schedule-card{
+      background:var(--gray);
+      padding:20px;
+      border-radius:12px;
+      margin-bottom:20px;
+      text-align:center;
     }
-
-    .schedule-card {
-      background: var(--gray);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      text-align: center;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    .status-btn{
+      padding:6px 18px;
+      border-radius:8px;
+      font-weight:700;
+      display:inline-block;
+      margin-top:8px;
+      background:var(--gold);
+      color:#000;
     }
-
-    .schedule-card h2 { margin-bottom: 10px; font-weight: 700; }
-    .schedule-card p { margin: 6px 0; }
-
-    .status-btn {
-      background: var(--gold);
-      color: #000;
-      padding: 6px 18px;
-      border-radius: 8px;
-      font-weight: 700;
-      display: inline-block;
-      margin-top: 10px;
+    .status-finished{
+      background:rgba(255,255,255,.2);
+      color:#ddd;
     }
-    .status-finished { background: rgba(255,255,255,0.25); color:#ddd; }
-
-    .article-box {
-      background: var(--gray);
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 40px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    .article-box{
+      background:var(--gray);
+      padding:20px;
+      border-radius:12px;
+      margin-bottom:30px;
     }
-
-    .article-box h3 { margin-bottom: 10px; }
-    .article-box p { white-space: pre-line; line-height: 1.6; }
-
-    footer {
-      background: var(--navy);
-      text-align: center;
-      padding: 20px;
-      margin-top: auto;
+    footer{
+      text-align:center;
+      padding:20px;
+      background:#0b1d3a;
+      margin-top:40px;
     }
-
-    .back-btn, .delete-btn {
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-weight: 700;
-      text-decoration: none;
-      margin: 10px 5px 20px;
-      display: inline-block;
+    .back-btn{
+      background:var(--gold);color:#000;
+      padding:8px 14px;border-radius:8px;
+      font-weight:700;text-decoration:none;
     }
-    .back-btn { background: var(--gold); color:#000; }
-    .delete-btn { background: var(--red); color:#fff; border:none; }
+    .delete-btn{
+      background:var(--red);color:#fff;
+      padding:8px 14px;border-radius:8px;
+      font-weight:700;border:none;
+      display:none;
+    }
   </style>
 </head>
 
 <body>
 
-  <!-- HEADER INCLUDE -->
-  <div id="include-header"></div>
-  <script>
-    (async () => {
-      const target = document.getElementById("include-header");
-      const res = await fetch("header.html?cb=" + Date.now());
-      const html = await res.text();
-      target.innerHTML = html;
+<div id="include-header"></div>
 
-      target.querySelectorAll("script").forEach(old => {
-        const s = document.createElement("script");
-        if (old.src) s.src = old.src; else s.textContent = old.textContent;
-        document.body.appendChild(s);
-        old.remove();
-      });
+<main>
+  <div id="flyerBox" class="flyer-box"><p>Loading flyer...</p></div>
 
-      window.dispatchEvent(new Event("header-ready"));
-    })();
-  </script>
+  <div class="schedule-card">
+    <h2 id="matchTitle">Loading...</h2>
+    <p id="matchStadium"></p>
+    <p id="matchDate"></p>
+    <p id="matchTime"></p>
+    <p id="matchScore"></p>
+    <span id="matchStatus" class="status-btn"></span>
+  </div>
 
-  <main>
-    <div class="flyer-box" id="flyerBox"><p>Loading flyer...</p></div>
+  <div class="article-box">
+    <h3>🔍 Sorotan Utama</h3>
+    <p id="article">Loading article...</p>
+  </div>
 
-    <div class="schedule-card">
-      <h2 id="matchTitle">Loading...</h2>
-      <p id="matchStadium"></p>
-      <p id="matchDate"></p>
-      <p id="matchTime"></p>
-      <p id="matchScore"></p>
-      <span id="matchStatus" class="status-btn"></span>
-    </div>
+  <div style="text-align:center;margin-bottom:40px;">
+    <a href="schedule.html" class="back-btn">← Back</a>
+    <button id="deleteBtn" class="delete-btn">🗑 Delete</button>
+  </div>
+</main>
 
-    <div class="article-box">
-      <h3>🔍 Sorotan Utama</h3>
-      <p id="article">Loading article...</p>
-    </div>
-
-    <div style="text-align:center;">
-      <a href="schedule.html" class="back-btn">← Back</a>
-      <button id="deleteBtn" class="delete-btn" style="display:none;">🗑 Delete</button>
-    </div>
-  </main>
-
-  <footer>© 2025 MadridForID</footer>
+<footer>© 2025 MadridForID</footer>
 
 <script type="module">
-window.addEventListener("header-ready", async () => {
-  try {
-    const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js");
-    const { getFirestore, doc, getDoc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
-    const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js");
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
-      authDomain: "madridforid-web.firebaseapp.com",
-      projectId: "madridforid-web",
-      storageBucket: "madridforid-web.appspot.com",
-      messagingSenderId: "882098167537",
-      appId: "1:882098167537:web:acf50819e9c81adaad1350"
+/* ======================= FIREBASE INIT FIRST ======================= */
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, deleteDoc
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import {
+  getAuth, onAuthStateChanged, GoogleAuthProvider,
+  signOut, signInWithPopup
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
+  authDomain:"madridforid-web.firebaseapp.com",
+  projectId:"madridforid-web",
+  storageBucket:"madridforid-web.appspot.com",
+  messagingSenderId:"882098167537",
+  appId:"1:882098167537:web:acf50819e9c81adaad1350"
+};
+
+if (getApps().length === 0) initializeApp(firebaseConfig);
+
+const db = getFirestore();
+const auth = getAuth();
+const provider = new GoogleAuthProvider();
+const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
+
+/* ======================= INJECT HEADER ======================= */
+(async () => {
+  const wrap = document.getElementById("include-header");
+  const res = await fetch("header.html?cb=" + Date.now());
+  const html = await res.text();
+
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html;
+
+  tmp.querySelectorAll("script").forEach(s => s.remove());
+  wrap.innerHTML = tmp.innerHTML;
+
+  window.dispatchEvent(new Event("header-ready"));
+})();
+
+/* ======================= AFTER HEADER READY ======================= */
+window.addEventListener("header-ready", () => {
+
+  /* --- re-bind header buttons --- */
+  const signBtn = document.getElementById("signBtn");
+  const signText = document.getElementById("signText");
+  const avatar = document.getElementById("avatarImg");
+  const burger = document.getElementById("burgerBtn");
+  const mobile = document.getElementById("mobileDropdown");
+
+  if (signBtn) {
+    signBtn.onclick = async () => {
+      if (auth.currentUser) await signOut(auth);
+      else await signInWithPopup(auth, provider);
     };
-
-    if (getApps().length === 0) initializeApp(firebaseConfig);
-
-    const db = getFirestore();
-    const auth = getAuth();
-
-    const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
-
-    // Get ID
-    const id = new URLSearchParams(window.location.search).get("id");
-
-    if (!id) {
-      document.getElementById("flyerBox").innerHTML = `<p style="color:red">Invalid ID</p>`;
-      return;
-    }
-
-    const snap = await getDoc(doc(db, "schedule", id));
-    if (!snap.exists()) {
-      document.getElementById("flyerBox").innerHTML = `<p style="color:red">Not found</p>`;
-      return;
-    }
-
-    const data = snap.data();
-
-    // Fill data
-    document.getElementById("matchTitle").textContent = data.match;
-    document.getElementById("matchStadium").textContent = `🏟 ${data.stadium || "-"}`;
-    document.getElementById("matchScore").textContent = `⚽ ${data.score || "-"}`;
-    document.getElementById("article").textContent = data.article || "-";
-
-    // Flyer (IMGBB)
-    const flyerUrl = data.flyerUrl || "";
-
-    if (flyerUrl) {
-      document.getElementById("flyerBox").innerHTML = `
-        <img src="${flyerUrl}" alt="Flyer" 
-          onerror="this.parentElement.innerHTML='<p style=color:red>Flyer gagal dimuat</p>'">
-      `;
-    } else {
-      document.getElementById("flyerBox").innerHTML = "<p>No flyer available</p>";
-    }
-
-    // Date
-    const dt = new Date(data.datetime);
-    document.getElementById("matchDate").textContent = `📅 ${dt.toLocaleDateString("id-ID",{day:"2-digit",month:"long",year:"numeric"})}`;
-    document.getElementById("matchTime").textContent = `⏰ ${dt.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})} WIB`;
-
-    // Status
-    const now = Date.now();
-    const statusEl = document.getElementById("matchStatus");
-
-    if (now > dt.getTime() + 2*60*60*1000) {
-      statusEl.textContent = "FINISHED";
-      statusEl.classList.add("status-finished");
-    } else if (now < dt.getTime()) {
-      statusEl.textContent = "UPCOMING";
-    } else {
-      statusEl.textContent = "LIVE";
-      statusEl.style.background = "#e63946";
-      statusEl.style.color = "#fff";
-    }
-
-    // Admin delete
-    const deleteBtn = document.getElementById("deleteBtn");
-    onAuthStateChanged(auth, (user) => {
-      if (user && user.uid === ADMIN_UID) {
-        deleteBtn.style.display = "inline-block";
-        deleteBtn.onclick = async () => {
-          if (confirm("Hapus match ini?")) {
-            await deleteDoc(doc(db, "schedule", id));
-            alert("Deleted");
-            window.location.href = "schedule.html";
-          }
-        };
-      }
-    });
-
-  } catch (err) {
-    console.error(err);
-    document.getElementById("flyerBox").innerHTML = `<p style="color:red">Error loading data</p>`;
   }
+
+  if (burger && mobile) {
+    burger.onclick = () => mobile.classList.toggle("show");
+    document.addEventListener("click", e => {
+      if (!mobile.contains(e.target) && !burger.contains(e.target))
+        mobile.classList.remove("show");
+    });
+  }
+
+  // logo → home
+  const logo = document.querySelector(".brand-title");
+  if (logo) {
+    logo.style.cursor = "pointer";
+    logo.onclick = () => window.location.href = "index.html";
+  }
+
+  // auth update header
+  onAuthStateChanged(auth, user => {
+    if (signText) signText.textContent = user ? "Logout" : "Sign In";
+    if (avatar) {
+      if (user) { avatar.src = user.photoURL; avatar.style.display="block"; }
+      else avatar.style.display="none";
+    }
+  });
+
+  /* ================= LOAD DATA HERE (firebase sudah siap) ================= */
+  loadSchedule();
 });
+
+/* ======================= LOAD SCHEDULE FUNCTION ======================= */
+async function loadSchedule() {
+  const id = new URLSearchParams(location.search).get("id");
+
+  if (!id) {
+    document.getElementById("flyerBox").innerHTML = `<p style="color:red">Invalid ID</p>`;
+    return;
+  }
+
+  const snap = await getDoc(doc(db, "schedule", id));
+
+  if (!snap.exists()) {
+    document.getElementById("flyerBox").innerHTML = `<p style="color:red">Not Found</p>`;
+    return;
+  }
+
+  const d = snap.data();
+
+  document.getElementById("matchTitle").textContent   = d.match;
+  document.getElementById("matchStadium").textContent = "🏟 " + (d.stadium || "-");
+  document.getElementById("matchScore").textContent   = "⚽ " + (d.score || "-");
+  document.getElementById("article").textContent      = d.article || "-";
+
+  const flyerBox = document.getElementById("flyerBox");
+  flyerBox.innerHTML = d.flyerUrl ? `<img src="${d.flyerUrl}">`
+                                  : `<p>No flyer available</p>`;
+
+  const dt = new Date(d.datetime);
+  document.getElementById("matchDate").textContent =
+    "📅 " + dt.toLocaleDateString("id-ID",{day:"2-digit",month:"long",year:"numeric"});
+  document.getElementById("matchTime").textContent =
+    "⏰ " + dt.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}) + " WIB";
+
+  const statusEl = document.getElementById("matchStatus");
+  const now = Date.now();
+  const end = dt.getTime() + 2*60*60*1000;
+
+  if (now > end) {
+    statusEl.textContent = "FINISHED";
+    statusEl.classList.add("status-finished");
+  } else if (now < dt.getTime()) {
+    statusEl.textContent = "UPCOMING";
+  } else {
+    statusEl.textContent = "LIVE";
+    statusEl.style.background = "#e63946";
+    statusEl.style.color = "#fff";
+  }
+
+  const deleteBtn = document.getElementById("deleteBtn");
+  onAuthStateChanged(auth, user => {
+    if (user && user.uid === ADMIN_UID) {
+      deleteBtn.style.display = "inline-block";
+      deleteBtn.onclick = async () => {
+        if (confirm("Delete this match?")) {
+          await deleteDoc(doc(db, "schedule", id));
+          alert("Deleted");
+          location.href = "schedule.html";
+        }
+      };
+    }
+  });
+}
+
 </script>
 
 </body>
