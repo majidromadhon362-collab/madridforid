@@ -168,9 +168,10 @@
         </div>
 
         <div class="form-group">
-          <label>Upload Flyer (optional, will be uploaded to IMGBB)</label>
+          <label>Upload Flyer (optional, will be uploaded to GitHub repo)</label>
           <input id="fmFlyerFile" type="file" accept="image/*">
           <img id="matchPreview" alt="preview">
+          <small style="display:block;margin-top:6px;color:#666">Images will be uploaded to your GitHub repo and served from raw.githubusercontent.</small>
         </div>
 
         <div style="display:flex;gap:8px;justify-content:flex-end;">
@@ -190,14 +191,18 @@
 
   <script type="module">
     /***** CONFIG *****/
-    const IMGBB_API_KEY = "c438ddf1b0de692e084414e335436ec6"; // your imgbb
+    // Ganti sesuai repo kamu
+    const GITHUB_OWNER = "majidromadhon362-collab";
+    const GITHUB_REPO  = "madridforid-images";
+    const GITHUB_BRANCH = "main"; // branch target
+
     const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
 
     /***** FIREBASE INIT (local to this page) *****/
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import {
       getFirestore, collection, query, orderBy, getDocs, addDoc, deleteDoc,
-      doc, serverTimestamp, getDoc
+      doc, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
     import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
@@ -230,7 +235,7 @@
         tmp.querySelectorAll("script").forEach(s=>s.remove());
         target.innerHTML = tmp.innerHTML;
 
-        // wire burger + sign btn locally
+        // wire burger + sign btn locally (header script-less)
         const burger = document.getElementById("burgerBtn");
         const mobile = document.getElementById("mobileDropdown");
         const signBtn = document.getElementById("signBtn");
@@ -315,6 +320,7 @@
         return `${days}D ${hours}H ${minutes}M`;
       })();
 
+      // flyer URL fallback: use raw.githubusercontent if path stored, else existing flyerUrl
       const flyer = v.flyerUrl || v.flyer || v.image || "https://i.postimg.cc/PrV4N35r/user.png";
 
       const el = document.createElement("div");
@@ -414,23 +420,76 @@
       matchPreview.style.display = "block";
     };
 
-    /***** UPLOAD TO IMGBB helper *****/
-    async function uploadToImgbb(file){
+    /***** GITHUB UPLOAD helper *****/
+    function safeFileName(name){
+      return name.replace(/[^a-z0-9\-\_\.]/gi,'_').replace(/\s+/g,'_').slice(0,120);
+    }
+
+    async function getGhTokenPrompt(){
+      // first check localStorage
+      let token = localStorage.getItem('gh_token') || null;
+      if(token) return token;
+      // prompt user once
+      token = prompt("Enter your GitHub Personal Access Token (repo scope). It will be saved in your browser (localStorage) for future uploads.");
+      if(token){
+        token = token.trim();
+        localStorage.setItem('gh_token', token);
+        return token;
+      }
+      return null;
+    }
+
+    async function uploadToGitHub(file){
       if(!file) return null;
-      // convert to base64 for imgbb
+      const token = await getGhTokenPrompt();
+      if(!token) throw new Error("GitHub token not provided.");
+      // convert to base64 (no data: prefix)
       const base64 = await new Promise((res,rej)=>{
         const r = new FileReader();
-        r.onload = ()=> res(r.result.split(",")[1]);
+        r.onload = ()=> {
+          const s = r.result;
+          // s like "data:image/png;base64,...."
+          const idx = s.indexOf(',')+1;
+          res(s.slice(idx));
+        };
         r.onerror = rej;
         r.readAsDataURL(file);
       });
-      const form = new FormData();
-      form.append("key", IMGBB_API_KEY);
-      form.append("image", base64);
-      const resp = await fetch("https://api.imgbb.com/1/upload", { method:"POST", body: form });
+
+      const timestamp = Date.now();
+      const fname = safeFileName(file.name || `image_${timestamp}.jpg`);
+      const path = `images/${timestamp}_${fname}`;
+      const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${encodeURIComponent(path)}`;
+
+      const body = {
+        message: `upload ${path} via web`,
+        content: base64,
+        branch: GITHUB_BRANCH
+      };
+
+      const resp = await fetch(apiUrl, {
+        method: "PUT",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json",
+          "Accept": "application/vnd.github+json"
+        },
+        body: JSON.stringify(body)
+      });
+
       const j = await resp.json();
-      if(!j || !j.success) throw new Error(j?.error?.message || "IMGBB upload failed");
-      return j.data.display_url || j.data.url;
+      if(!resp.ok){
+        console.error("GitHub upload error", j);
+        // if token invalid, remove saved token so user can re-enter
+        if(j && j.message && /Bad credentials|rate limit/i.test(j.message)){
+          localStorage.removeItem('gh_token');
+        }
+        throw new Error(j && j.message ? j.message : "GitHub upload failed");
+      }
+
+      // build raw URL
+      const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${path}`;
+      return { rawUrl, path, resp: j };
     }
 
     /***** SAVE NEW MATCH (admin) *****/
@@ -449,7 +508,9 @@
       try{
         let flyerUrl = null;
         if(flyerFile){
-          flyerUrl = await uploadToImgbb(flyerFile);
+          // upload to GitHub
+          const up = await uploadToGitHub(flyerFile);
+          flyerUrl = up.rawUrl;
         }
         await addDoc(collection(db,"schedule"), {
           match,
@@ -520,6 +581,12 @@
         if(!document.getElementById("grid").children.length) loadSchedules(false);
       }, 600);
     });
+
+    /***** Extra: helper to clear saved GitHub token (for user control) *****/
+    window.__clearGhToken = ()=>{
+      localStorage.removeItem('gh_token');
+      alert("Saved GitHub token cleared from this browser.");
+    };
 
   </script>
 </body>

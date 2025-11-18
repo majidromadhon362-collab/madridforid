@@ -16,6 +16,7 @@
       --red:#e63946;
       --white:#fff;
     }
+
     *{margin:0;padding:0;box-sizing:border-box}
     html,body{
       font-family:"Poppins",sans-serif;
@@ -26,54 +27,134 @@
       flex-direction:column;
       overflow-x:hidden;
     }
+
     main{flex:1;width:100%;max-width:1100px;margin:auto;padding:20px}
-    .top-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:14px;gap:12px}
-    .btn{background:var(--gold);color:#000;border:0;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer}
+
+    .top-row{
+      display:flex;justify-content:space-between;align-items:center;
+      flex-wrap:wrap;margin-bottom:14px;gap:12px
+    }
+
+    .btn{
+      background:var(--gold);color:#000;border:0;
+      padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer
+    }
     .btn.ghost{background:transparent;border:2px solid var(--gold);color:var(--gold)}
+
+    /* SELECT */
     .category-select{position:relative}
-    .select-display{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 12px;cursor:pointer;color:#fff;min-width:180px;display:flex;justify-content:space-between;align-items:center}
-    .select-options{position:absolute;top:105%;left:0;width:100%;background:#fff;color:#000;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.2);display:none;flex-direction:column;z-index:10}
+    .select-display{
+      background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+      border-radius:8px;padding:6px 12px;cursor:pointer;color:#fff;
+      min-width:180px;display:flex;justify-content:space-between;align-items:center
+    }
+    .select-options{
+      position:absolute;top:105%;left:0;width:100%;
+      background:#fff;color:#000;border-radius:8px;
+      box-shadow:0 4px 12px rgba(0,0,0,.2);display:none;
+      flex-direction:column;z-index:10
+    }
     .select-options.show{display:flex}
     .select-options div{padding:8px 10px;cursor:pointer}
     .select-options div:hover{background:var(--gold);color:#000;font-weight:600}
-    .gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:20px}
-    .card{background:rgba(255,255,255,0.05);border-radius:12px;overflow:hidden;transition:transform .18s;position:relative}
+
+    /* GRID */
+    .gallery-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:18px;margin-top:20px
+    }
+    .card{
+      background:rgba(255,255,255,0.05);
+      border-radius:12px;overflow:hidden;
+      transition:transform .18s;position:relative
+    }
     .card:hover{transform:translateY(-5px)}
-    .thumb{position:relative;padding-top:56.25%;overflow:hidden;background:#111}
-    .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .4s;opacity:0}
+
+    .thumb{
+      position:relative;padding-top:56.25%;overflow:hidden;background:#111;
+    }
+    .thumb img{
+      position:absolute;inset:0;width:100%;height:100%;
+      object-fit:cover;transition:opacity .3s;opacity:0
+    }
     .thumb img.loaded{opacity:1}
+
     .meta{text-align:center;padding:10px}
-    .category{background:var(--gold);color:#000;padding:4px 10px;border-radius:999px;font-weight:700;font-size:.8rem}
-    .delete-btn{background:var(--red);border:0;color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;margin-top:6px}
-    footer{background:var(--navy);text-align:center;padding:15px;font-size:.9rem;margin-top:auto}
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;justify-content:center;align-items:center;z-index:1500}
+    .category{
+      background:var(--gold);color:#000;padding:4px 10px;
+      border-radius:999px;font-weight:700;font-size:.8rem
+    }
+    .delete-btn{
+      background:var(--red);border:0;color:#fff;
+      padding:6px 10px;border-radius:8px;cursor:pointer;margin-top:6px
+    }
+
+    footer{
+      background:var(--navy);text-align:center;padding:15px;
+      font-size:.9rem;margin-top:auto
+    }
+
+    /* OVERLAY */
+    .overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.55);
+      display:none;justify-content:center;align-items:center;z-index:1500
+    }
     .overlay.show{display:flex}
-    .form-card{background:#fff;color:#000;border-radius:12px;padding:20px;width:90%;max-width:600px}
+
+    .form-card{
+      background:#fff;color:#000;border-radius:12px;
+      padding:20px;width:90%;max-width:600px
+    }
     .form-group{margin-bottom:12px}
     .form-group label{font-weight:600;margin-bottom:6px;display:block}
-    .form-group input{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px}
+    .form-group input{
+      width:100%;padding:8px;border:1px solid #ccc;border-radius:8px
+    }
+
     #cropArea{display:none;margin-top:10px;max-height:350px;overflow:hidden;border-radius:8px}
     #cropArea img{width:100%;display:block}
+
+    #errorMsg{
+      color:#ff7676;
+      margin-top:14px;
+      font-weight:600;
+    }
   </style>
 </head>
 
 <body>
 
-  <!-- HEADER -->
+  <!-- HEADER (strip script, wire manually — same as schedule) -->
   <div id="include-header"></div>
   <script>
-  (async()=>{
-    const res = await fetch("header.html?cb=" + Date.now());
-    const html = await res.text();
-    const box = document.getElementById("include-header");
-    box.innerHTML = html;
-    box.querySelectorAll("script").forEach(old=>{
-      const s=document.createElement("script");
-      if(old.src) s.src=old.src;
-      else s.textContent=old.textContent;
-      document.body.appendChild(s);
-    });
-  })();
+    (async()=>{
+      const res = await fetch("header.html?cb="+Date.now());
+      const html = await res.text();
+      const box = document.getElementById("include-header");
+
+      const tmp = document.createElement("div");
+      tmp.innerHTML = html;
+
+      tmp.querySelectorAll("script").forEach(s=>s.remove());
+      box.innerHTML = tmp.innerHTML;
+
+      const burger = document.getElementById("burgerBtn");
+      const mobile = document.getElementById("mobileDropdown");
+      const signBtn = document.getElementById("signBtn");
+      const signText = document.getElementById("signText");
+      const avatarImg = document.getElementById("avatarImg");
+
+      burger?.addEventListener("click", ()=> mobile.classList.toggle("show"));
+      document.addEventListener("click", (e)=>{
+        if(!mobile) return;
+        if(!mobile.contains(e.target) && !burger.contains(e.target))
+          mobile.classList.remove("show");
+      });
+
+      window._headerReady = true;
+      window.dispatchEvent(new Event("header-ready"));
+    })();
   </script>
 
   <main>
@@ -97,7 +178,15 @@
       </div>
     </div>
 
+    <div id="errorMsg"></div>
+
     <div id="galleryGrid" class="gallery-grid"></div>
+
+    <button id="loadMoreBtn"
+      class="btn ghost"
+      style="margin:25px auto;display:none;width:180px;">
+      Load More ▼
+    </button>
   </main>
 
   <!-- ADD PHOTO MODAL -->
@@ -138,204 +227,322 @@
   <footer>© 2025 MadridForID | Real Madrid Indonesia Fanbase</footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-
+  
   <script type="module">
-    // FIREBASE
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+/* ----------------------------- FIREBASE INIT ----------------------------- */
 
-    // IMGBB
-    const IMGBB_API_KEY = "c438ddf1b0de692e084414e335436ec6";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, getDocs, query,
+  orderBy, where, serverTimestamp, deleteDoc, doc, limit, startAfter
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey:"AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
-      authDomain:"madridforid-web.firebaseapp.com",
-      projectId:"madridforid-web",
-      storageBucket:"madridforid-web.appspot.com",
-      messagingSenderId:"882098167537",
-      appId:"1:882098167537:web:acf50819e9c81adaad1350"
-    };
+const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
 
-    const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
+/* GitHub Upload Config */
+const GITHUB_OWNER = "majidromadhon362-collab";
+const GITHUB_REPO  = "madridforid-images";
+const GITHUB_BRANCH = "main";
 
-    const app = initializeApp(firebaseConfig);
-    const db  = getFirestore(app);
-    const auth= getAuth(app);
+const firebaseConfig = {
+  apiKey: "AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
+  authDomain: "madridforid-web.firebaseapp.com",
+  projectId: "madridforid-web",
+  storageBucket: "madridforid-web.appspot.com",
+  messagingSenderId: "882098167537",
+  appId: "1:882098167537:web:acf50819e9c81adaad1350"
+};
 
-    // DOM
-    const grid = document.getElementById("galleryGrid");
-    const selectDisplay = document.getElementById("selectDisplay");
-    const selectOptions = document.getElementById("selectOptions");
-    const addBtn = document.getElementById("addBtn");
-    const overlay = document.getElementById("overlay");
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
-    const fileInput = document.getElementById("fileInput");
-    const cropArea = document.getElementById("cropArea");
-    const cropImg  = document.getElementById("cropImg");
-    const cropBtn  = document.getElementById("cropBtn");
-    const saveBtn  = document.getElementById("saveBtn");
+/* ----------------------------- DOM ELEMENTS ------------------------------ */
 
-    const catInput = document.getElementById("catInput");
-    const subInput = document.getElementById("subInput");
+const grid = document.getElementById("galleryGrid");
+const selectDisplay = document.getElementById("selectDisplay");
+const selectOptions = document.getElementById("selectOptions");
+const loadMoreBtn = document.getElementById("loadMoreBtn");
+const errorMsg = document.getElementById("errorMsg");
 
-    let currentUser = null;
-    let currentCategory = "all";
-    let cropper = null;
+const addBtn = document.getElementById("addBtn");
+const overlay = document.getElementById("overlay");
+const fileInput = document.getElementById("fileInput");
+const cropArea = document.getElementById("cropArea");
+const cropImg  = document.getElementById("cropImg");
+const cropBtn  = document.getElementById("cropBtn");
+const saveBtn  = document.getElementById("saveBtn");
+const catInput = document.getElementById("catInput");
+const subInput = document.getElementById("subInput");
 
-    // CATEGORY DROPDOWN
-    selectDisplay.onclick=()=>selectOptions.classList.toggle("show");
-    selectOptions.querySelectorAll("div").forEach(opt=>{
-      opt.onclick=()=>{
-        currentCategory = opt.dataset.val;
-        selectDisplay.textContent = opt.textContent + " ▼";
-        selectOptions.classList.remove("show");
-        loadGallery();
-      };
-    });
+let cropper = null;
+let currentUser = null;
+let currentCategory = "all";
 
-    // LOAD GALLERY
-    async function loadGallery(){
-      grid.innerHTML="<p style='color:#ccc;'>Loading...</p>";
+let lastVisible = null;        // For pagination
+const PAGE_LIMIT = 20;         // Load 20 items per page
 
-      let q=(currentCategory!=="all")
-        ? query(collection(db,"gallery"), where("category","==",currentCategory), orderBy("createdAt","desc"))
-        : query(collection(db,"gallery"), orderBy("createdAt","desc"));
+/* ----------------------------- CATEGORY DROPDOWN ------------------------------ */
 
-      const snap=await getDocs(q);
-      grid.innerHTML="";
+selectDisplay.onclick = ()=> selectOptions.classList.toggle("show");
+selectOptions.querySelectorAll("div").forEach(opt=>{
+  opt.onclick = ()=>{
+    currentCategory = opt.dataset.val;
+    selectDisplay.textContent = opt.textContent + " ▼";
+    selectOptions.classList.remove("show");
+    loadGallery(true);
+  };
+});
 
-      if(snap.empty){
-        grid.innerHTML="<p style='color:#bbb;'>No images found.</p>";
-        return;
-      }
+/* ----------------------------- GALLERY LOADER (FAST) ------------------------------ */
 
-      snap.forEach(docSnap=>{
-        const d = docSnap.data();
-        const card = document.createElement("div");
-        card.className="card";
-
-        const img = document.createElement("img");
-        img.src = d.imageUrl;
-        img.onload = () => img.classList.add("loaded");
-
-        card.innerHTML = `
-          <div class='thumb'></div>
-          <div class='meta'>
-            <span class='category'>${d.category}</span>
-            <p>${d.subtitle || ""}</p>
-          </div>
-        `;
-        card.querySelector(".thumb").appendChild(img);
-
-        if(currentUser && currentUser.uid === ADMIN_UID){
-          const del = document.createElement("button");
-          del.textContent="🗑 Delete";
-          del.className="delete-btn";
-          del.onclick = async () => {
-            if(confirm("Delete this photo?")){
-              await deleteDoc(doc(db,"gallery",docSnap.id));
-              loadGallery();
-            }
-          };
-          card.appendChild(del);
-        }
-
-        grid.appendChild(card);
-      });
+async function loadGallery(reset = false){
+  try{
+    errorMsg.textContent = "Loading gallery...";
+    if(reset){
+      grid.innerHTML = "";
+      lastVisible = null;
     }
 
-    // AUTH (Admin only button)
-    onAuthStateChanged(auth,(u)=>{
-      currentUser=u;
-      addBtn.style.display = (u && u.uid===ADMIN_UID) ? "inline-block" : "none";
-    });
+    let q;
 
-    // OPEN OVERLAY
-    addBtn.onclick = () => overlay.classList.add("show");
+    if(currentCategory !== "all"){
+      q = query(
+        collection(db,"gallery"),
+        where("category","==",currentCategory),
+        orderBy("createdAt","desc"),
+        limit(PAGE_LIMIT),
+        ...(lastVisible ? [startAfter(lastVisible)] : [])
+      );
+    } else {
+      q = query(
+        collection(db,"gallery"),
+        orderBy("createdAt","desc"),
+        limit(PAGE_LIMIT),
+        ...(lastVisible ? [startAfter(lastVisible)] : [])
+      );
+    }
 
-    // CROP HANDLER
-    fileInput.onchange = e => {
-      const file = e.target.files[0];
-      if(!file) return;
+    const snap = await getDocs(q);
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        cropImg.src = reader.result;
-        cropArea.style.display="block";
-        cropBtn.style.display="inline-block";
+    if(snap.empty && reset){
+      grid.innerHTML = "<p style='color:#ccc'>No images found.</p>";
+      loadMoreBtn.style.display = "none";
+      errorMsg.textContent = "";
+      return;
+    }
 
-        cropper && cropper.destroy();
-        cropper = new Cropper(cropImg,{
-          aspectRatio:16/9,
-          viewMode:1,
-          autoCropArea:1
-        });
-      };
-      reader.readAsDataURL(file);
-    };
+    snap.forEach(docSnap=>{
+      const d = docSnap.data();
 
-    cropBtn.onclick=()=>{
-      const canvas = cropper.getCroppedCanvas({
-        width:1600,
-        height:900
-      });
-      cropImg.src = canvas.toDataURL("image/jpeg",0.9);
-      cropBtn.style.display="none";
-    };
+      const card = document.createElement("div");
+      card.className = "card";
 
-    // SAVE PHOTO (Upload to IMGBB)
-    saveBtn.onclick = async()=>{
-      if(!cropImg.src) return alert("Upload image first!");
+      const thumb = document.createElement("div");
+      thumb.className = "thumb";
 
-      saveBtn.textContent="Uploading...";
-      saveBtn.disabled=true;
+      const img = document.createElement("img");
+      img.loading = "lazy";
+      img.src = d.imageUrl;
+      img.onload = ()=> img.classList.add("loaded");
 
-      // Convert base64 to blob
-      const blob = await (await fetch(cropImg.src)).blob();
+      thumb.appendChild(img);
+      card.appendChild(thumb);
 
-      const form = new FormData();
-      form.append("key", IMGBB_API_KEY);
-      form.append("image", blob);
+      card.insertAdjacentHTML("beforeend", `
+        <div class="meta">
+          <span class="category">${d.category}</span>
+          <p>${d.subtitle || ""}</p>
+        </div>
+      `);
 
-      const res = await fetch("https://api.imgbb.com/1/upload", {
-        method:"POST",
-        body: form
-      });
-
-      const json = await res.json();
-      if(!json.success){
-        alert("Upload failed");
-        saveBtn.disabled=false;
-        saveBtn.textContent="Upload";
-        return;
+      if(currentUser && currentUser.uid === ADMIN_UID){
+        const del = document.createElement("button");
+        del.className = "delete-btn";
+        del.textContent = "🗑 Delete";
+        del.onclick = async()=>{
+          if(confirm("Delete photo?")){
+            await deleteDoc(doc(db,"gallery",docSnap.id));
+            loadGallery(true);
+          }
+        };
+        card.appendChild(del);
       }
 
-      const imageURL = json.data.url;
+      grid.appendChild(card);
+    });
 
-      await addDoc(collection(db,"gallery"),{
-        imageUrl: imageURL,
-        subtitle: subInput.value || "",
-        category: catInput.value,
-        createdAt: serverTimestamp()
-      });
+    lastVisible = snap.docs[snap.docs.length - 1];
 
-      alert("Photo added!");
+    loadMoreBtn.style.display = snap.size < PAGE_LIMIT ? "none" : "block";
+    errorMsg.textContent = "";
 
-      overlay.classList.remove("show");
-      cropArea.style.display="none";
-      fileInput.value="";
-      subInput.value="";
+  } catch(err){
+    console.error("Gallery load error:", err);
+    errorMsg.textContent = "Failed to load gallery.";
+  }
+}
 
-      saveBtn.disabled=false;
-      saveBtn.textContent="Upload";
+/* ----------------------------- LOAD MORE ------------------------------ */
 
-      loadGallery();
-    };
+loadMoreBtn.onclick = ()=> loadGallery(false);
 
-    // FIRST LOAD
-    loadGallery();
-  </script>
+/* ----------------------------- CROPPER HANDLER ------------------------------ */
+
+fileInput.onchange = e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    cropImg.src = reader.result;
+    cropArea.style.display = "block";
+    cropBtn.style.display = "inline-block";
+
+    cropper && cropper.destroy();
+    cropper = new Cropper(cropImg,{ aspectRatio:16/9, viewMode:1, autoCropArea:1 });
+  };
+  reader.readAsDataURL(file);
+};
+
+cropBtn.onclick = ()=>{
+  const canvas = cropper.getCroppedCanvas({ width:1600, height:900 });
+  cropImg.src = canvas.toDataURL("image/jpeg",0.9);
+  cropBtn.style.display = "none";
+};
+
+/* ----------------------------- GITHUB UPLOAD ------------------------------ */
+
+function safeFileName(name){
+  return name.replace(/[^a-z0-9\-\_\.]/gi,'_').replace(/\s+/g,'_').slice(0,120);
+}
+
+async function getGhTokenPrompt(){
+  let token = localStorage.getItem('gh_token');
+  if(token) return token;
+
+  token = prompt("Enter GitHub Token:");
+  if(token){
+    token = token.trim();
+    localStorage.setItem('gh_token', token);
+    return token;
+  }
+  return null;
+}
+
+async function uploadToGitHub(file){
+  const token = await getGhTokenPrompt();
+  if(!token) throw new Error("Token required.");
+
+  const base64 = await new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = ()=> res(r.result.split(",")[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+
+  const ts = Date.now();
+  const fname = safeFileName(file.name || `img_${ts}.jpg`);
+  const path = `gallery/${ts}_${fname}`;
+
+  const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`;
+
+  const body = {
+    message: "upload gallery",
+    content: base64,
+    branch: GITHUB_BRANCH
+  };
+
+  const resp = await fetch(apiUrl,{
+    method:"PUT",
+    headers:{
+      "Authorization":`Bearer ${token}`,
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify(body)
+  });
+
+  if(!resp.ok){
+    localStorage.removeItem("gh_token");
+    throw new Error("GitHub upload failed");
+  }
+
+  return `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${path}`;
+}
+
+/* ----------------------------- SAVE PHOTO (ADMIN) ------------------------------ */
+
+saveBtn.onclick = async()=>{
+  if(!cropImg.src) return alert("Upload image first!");
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = "Uploading...";
+
+  try{
+    const blob = await (await fetch(cropImg.src)).blob();
+    const url = await uploadToGitHub(blob);
+
+    await addDoc(collection(db,"gallery"),{
+      imageUrl:url,
+      subtitle:subInput.value,
+      category:catInput.value,
+      createdAt:serverTimestamp()
+    });
+
+    alert("Photo added!");
+    overlay.classList.remove("show");
+    fileInput.value = "";
+    cropArea.style.display = "none";
+    cropBtn.style.display = "none";
+    saveBtn.textContent = "Upload";
+
+    loadGallery(true);
+
+  } catch(err){
+    alert("Upload failed: " + err.message);
+  } finally {
+    saveBtn.disabled = false;
+  }
+};
+
+/* ----------------------------- AUTH LISTENER ------------------------------ */
+
+onAuthStateChanged(auth, user=>{
+  currentUser = user;
+  addBtn.style.display = (user && user.uid === ADMIN_UID) ? "inline-block" : "none";
+
+  setTimeout(()=>{  
+    const signBtn = document.getElementById("signBtn");
+    const signText = document.getElementById("signText");
+    const avatarImg = document.getElementById("avatarImg");
+
+    if(signBtn){
+      signBtn.onclick = async()=>{
+        if(auth.currentUser) await signOut(auth);
+        else await signInWithPopup(auth, provider);
+      };
+    }
+
+    if(signText) signText.textContent = user ? "Logout" : "Sign In";
+    if(avatarImg){
+      avatarImg.style.display = user ? "block" : "none";
+      if(user) avatarImg.src = user.photoURL || "";
+    }
+  },200);
+});
+
+/* ----------------------------- INIT WHEN HEADER READY ------------------------------ */
+
+window.addEventListener("header-ready", ()=>{
+  loadGallery(true);
+});
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  if(window._headerReady) loadGallery(true);
+});
+</script>
 
 </body>
 </html>

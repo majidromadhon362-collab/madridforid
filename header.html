@@ -139,7 +139,8 @@
     <div class="brand-wrap">
       <div class="brand-bg">
         <div class="brand-content">
-          <img class="brand-logo" src="https://i.postimg.cc/CL0BCK2X/1000089950-removebg-preview-2.png">
+          <!-- 🔥 LOGO RAW GITHUB -->
+          <img class="brand-logo" src="https://raw.githubusercontent.com/majidromadhon362-collab/madridforid-images/main/1000089950-removebg-preview%20(2).png">
           <div class="brand-title">MadridForID</div>
         </div>
       </div>
@@ -171,7 +172,6 @@
     <a href="about.html">About</a>
   </div>
 
-<!-- 🔥 FIREBASE AUTH ADA DI HEADER -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
@@ -182,7 +182,6 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-/* FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
   authDomain: "madridforid-web.firebaseapp.com",
@@ -226,18 +225,16 @@ signBtn?.addEventListener("click", async () => {
 onAuthStateChanged(auth, (user) => {
   if (user) {
     signText.textContent = "Logout";
-    avatarImg.src = user.photoURL || "https://i.postimg.cc/PrV4N35r/user.png";
+    avatarImg.src = user.photoURL || "https://raw.githubusercontent.com/majidromadhon362-collab/madridforid-images/main/default-user.png";
     avatarImg.style.display = "block";
   } else {
     signText.textContent = "Sign In";
     avatarImg.style.display = "none";
   }
 
-  // 🔥 KIRIM SINYAL KE HALAMAN UTAMA
   window.dispatchEvent(new CustomEvent("auth-updated", { detail: { user } }));
 });
 
-/* HEADER READY */
 window.dispatchEvent(new Event("header-ready"));
 </script>
 

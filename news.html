@@ -16,6 +16,7 @@
   --white: #ffffff;
 }
 
+/* RESET */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { width: 100%; min-height: 100%; overflow-x: hidden; }
 body {
@@ -42,7 +43,6 @@ main {
   border-bottom: 3px solid var(--gold);
   margin-bottom: 15px;
 }
-
 .section-header h2 { font-size: 1.4rem; font-weight: 700; }
 
 #createNewsBtn {
@@ -64,11 +64,11 @@ main {
   overflow: hidden;
   margin-bottom: 22px;
   box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  position: relative;
 }
-
-.news-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
-.news-card h3 { margin: 10px; }
-.news-card p { margin: 0 10px 10px; color: #ccc; }
+.news-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display:block; }
+.news-card h3 { margin: 10px; font-size:1.05rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.news-card p { margin: 0 10px 10px; color: #ccc; max-height:3.6em; overflow:hidden; }
 
 .read-btn {
   background: var(--gold);
@@ -84,23 +84,29 @@ main {
 .card-footer {
   padding: 10px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 12px;
   color: #bbb;
+  align-items:center;
 }
 
 .delete-btn {
   position: absolute;
   top: 10px;
   right: 10px;
-  background: red;
+  background: var(--navy);
   color: #fff;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  border: none;
+  border: 1px solid rgba(255,255,255,0.06);
   cursor: pointer;
+  display:none;
 }
+
+/* Load more */
+#loadMoreWrap{display:flex;justify-content:center;margin:18px 0}
+#loadMoreBtn{background:transparent;border:2px solid var(--gold);color:var(--gold);padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:700}
 
 /* FOOTER */
 footer {
@@ -127,8 +133,8 @@ footer {
   background: var(--gray);
   padding: 20px;
   border-radius: 12px;
-  width: 90%;
-  max-width: 400px;
+  width: 92%;
+  max-width: 520px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -140,7 +146,7 @@ footer {
   color: #fff;
   border-radius: 6px;
 }
-#imgPreview { max-height: 220px; width: 100%; border-radius: 6px; display: none; }
+#imgPreview { max-height: 320px; width: 100%; border-radius: 6px; display: none; object-fit:cover; }
 
 .spinner {
   width: 16px; height: 16px;
@@ -150,29 +156,16 @@ footer {
   animation: spin .7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* small helpers */
+.center { text-align:center; color:#bbb; padding:18px; }
 </style>
 </head>
 
 <body>
 
-<!-- HEADER LOADER -->
+<!-- HEADER LOADER (we inject header.html but strip module scripts; this page will handle auth wiring) -->
 <div id="include-header"></div>
-<script>
-(async()=>{
-  const container = document.getElementById("include-header");
-  const html = await (await fetch("header.html?cb=" + Date.now())).text();
-  container.innerHTML = html;
-
-  // Re-run script header sebagai module
-  container.querySelectorAll("script").forEach(old=>{
-    const s=document.createElement("script");
-    s.type = "module";
-    if(old.src) s.src = old.src;
-    else s.textContent = old.textContent;
-    document.body.appendChild(s);
-  });
-})();
-</script>
 
 <main>
   <div class="section-header">
@@ -181,6 +174,11 @@ footer {
   </div>
 
   <div id="newsContainer"></div>
+  <div id="loadingHint" class="center">Loading...</div>
+
+  <div id="loadMoreWrap" style="display:none">
+    <button id="loadMoreBtn">Load more</button>
+  </div>
 </main>
 
 <footer>© 2025 MadridForID | Real Madrid Indonesian Fanbase</footer>
@@ -188,25 +186,36 @@ footer {
 <!-- POPUP -->
 <div class="popup" id="popupForm">
   <form id="createForm">
-    <h3>Create News</h3>
+    <h3 style="margin-bottom:6px">Create News</h3>
     <input type="text" id="title" placeholder="Title" required>
-    <textarea id="summary" placeholder="Summary" required></textarea>
-    <textarea id="content" placeholder="Content" required></textarea>
+    <textarea id="summary" placeholder="Summary" rows="2" required></textarea>
+    <textarea id="content" placeholder="Content" rows="6" required></textarea>
     <input type="file" id="imageFile" accept="image/*" required>
-    <img id="imgPreview">
-    <button id="uploadBtn" type="submit">Upload & Save</button>
+    <img id="imgPreview" alt="preview">
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button id="uploadBtn" type="submit" style="background:var(--gold);color:#000;padding:8px 12px;border-radius:8px;border:0;font-weight:700">Upload & Save</button>
+      <button id="cancelBtn" type="button" style="background:transparent;border:0;color:#ddd">Cancel</button>
+    </div>
+    <small style="color:#bbb">Images uploaded to GitHub repo and served from raw.githubusercontent.</small>
   </form>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
 <script type="module">
+/* ========= CONFIG ========= */
+const GITHUB_OWNER = "majidromadhon362-collab";
+const GITHUB_REPO  = "madridforid-images";
+const GITHUB_BRANCH = "main";
+const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
+
+/* ========= FIREBASE ========= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
   getFirestore, collection, getDocs, addDoc, deleteDoc,
-  doc, orderBy, query, serverTimestamp
+  doc, orderBy, query, serverTimestamp, limit, startAfter
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA18AEH3-hByOQ7g9i3OJCJLzt4HDIJbpc",
@@ -216,31 +225,89 @@ const firebaseConfig = {
   messagingSenderId: "882098167537",
   appId: "1:882098167537:web:acf50819e9c81adaad1350"
 };
-
-const ADMIN_UID = "T9MBugPPYLQ4HVu6uLBV3kEck3C2";
-const IMGBB_API_KEY = "c438ddf1b0de692e084414e335436ec6";
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
+/* ========= DOM ========= */
 const createBtn = document.getElementById("createNewsBtn");
 const popup = document.getElementById("popupForm");
 const form = document.getElementById("createForm");
 const fileInput = document.getElementById("imageFile");
 const imgPreview = document.getElementById("imgPreview");
 const uploadBtn = document.getElementById("uploadBtn");
+const cancelBtn = document.getElementById("cancelBtn");
 const newsContainer = document.getElementById("newsContainer");
+const loadingHint = document.getElementById("loadingHint");
+const loadMoreWrap = document.getElementById("loadMoreWrap");
+const loadMoreBtn = document.getElementById("loadMoreBtn");
 
 let currentUser = null;
 let cropper = null;
 
+/* ========= HEADER INJECTION (strip scripts) ========= */
+(async function injectHeaderNoScripts(){
+  try{
+    const container = document.getElementById("include-header");
+    const res = await fetch("header.html?cb=" + Date.now());
+    if(!res.ok){ container.innerHTML = ""; window.dispatchEvent(new Event("header-ready")); return; }
+    const html = await res.text();
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+
+    // remove script tags to prevent duplicate firebase init
+    tmp.querySelectorAll("script").forEach(s => s.remove());
+    container.innerHTML = tmp.innerHTML;
+
+    // wire burger + sign btn locally (this page manages auth)
+    const burger = document.getElementById("burgerBtn");
+    const mobile = document.getElementById("mobileDropdown");
+    const signBtn = document.getElementById("signBtn");
+    const signText = document.getElementById("signText");
+    const avatarImg = document.getElementById("avatarImg");
+
+    burger?.addEventListener("click", ()=> mobile.classList.toggle("show"));
+    document.addEventListener("click", (e)=> {
+      if (!mobile) return;
+      if (!mobile.contains(e.target) && !burger.contains(e.target)) mobile.classList.remove("show");
+    });
+
+    // sign button will be wired below (auth listener)
+    signBtn?.addEventListener("click", async ()=>{
+      if(auth.currentUser) await signOut(auth);
+      else await signInWithPopup(auth, provider);
+    });
+
+    window.dispatchEvent(new Event("header-ready"));
+  }catch(err){
+    console.error("header inject err", err);
+    window.dispatchEvent(new Event("header-ready"));
+  }
+})();
+
+/* ========= AUTH UI & LOAD (fast + paged) ========= */
+const PAGE_SIZE = 8;
+let lastVisible = null;
+let isFetching = false;
+
 onAuthStateChanged(auth, user => {
   currentUser = user;
   createBtn.style.display = (user && user.uid === ADMIN_UID) ? "block" : "none";
-  loadNews();
+  // update header avatar + sign text if present
+  const signText = document.getElementById("signText");
+  const avatarImg = document.getElementById("avatarImg");
+  if(signText) signText.textContent = user ? "Logout" : "Sign In";
+  if(avatarImg) {
+    if(user){ avatarImg.src = user.photoURL || ""; avatarImg.style.display = "block"; }
+    else avatarImg.style.display = "none";
+  }
+
+  // first load
+  resetAndLoad();
 });
 
+/* ========= IMAGE CROPPER ========= */
 fileInput.addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -251,93 +318,271 @@ fileInput.addEventListener("change", (e) => {
     imgPreview.style.display = "block";
 
     cropper?.destroy();
-    cropper = new Cropper(imgPreview, { aspectRatio: 16/9 });
+    cropper = new Cropper(imgPreview, { aspectRatio: 16/9, viewMode:1, autoCropArea:1 });
   };
   reader.readAsDataURL(file);
 });
 
-createBtn.onclick = () => popup.classList.add("active");
-popup.onclick = (e)=>{ if(e.target===popup) popup.classList.remove("active"); };
+createBtn.onclick = () => {
+  popup.classList.add("active");
+};
+cancelBtn.onclick = () => {
+  popup.classList.remove("active");
+  form.reset();
+  imgPreview.style.display = "none";
+  cropper?.destroy();
+};
 
+/* ========= GITHUB HELPERS ========= */
+function safeFileName(name){
+  return name.replace(/[^a-z0-9\-\_\.]/gi,'_').replace(/\s+/g,'_').slice(0,120);
+}
+
+async function getGhTokenPrompt(){
+  let token = localStorage.getItem('gh_token') || null;
+  if(token) return token;
+  token = prompt("Enter your GitHub Personal Access Token (repo scope: repo). It will be saved in this browser for future uploads.");
+  if(token){
+    token = token.trim();
+    localStorage.setItem('gh_token', token);
+    return token;
+  }
+  return null;
+}
+
+async function uploadBlobToGitHub(blob, origName){
+  if(!blob) return null;
+  const token = await getGhTokenPrompt();
+  if(!token) throw new Error("GitHub token not provided.");
+
+  // convert blob -> base64 (no data: prefix)
+  const base64 = await new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = ()=> {
+      const s = r.result;
+      const idx = s.indexOf(',')+1;
+      res(s.slice(idx));
+    };
+    r.onerror = rej;
+    r.readAsDataURL(blob);
+  });
+
+  const timestamp = Date.now();
+  const fname = safeFileName(origName || `image_${timestamp}.jpg`);
+  const path = `images/news_${timestamp}_${fname}`;
+  const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${encodeURIComponent(path)}`;
+
+  const body = {
+    message: `upload ${path} via web`,
+    content: base64,
+    branch: GITHUB_BRANCH
+  };
+
+  const resp = await fetch(apiUrl, {
+    method: "PUT",
+    headers: {
+      "Authorization": "Bearer " + token,
+      "Content-Type": "application/json",
+      "Accept": "application/vnd.github+json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  const j = await resp.json();
+  if(!resp.ok){
+    console.error("GitHub upload error", j);
+    if(j && j.message && /Bad credentials|rate limit/i.test(j.message)){
+      localStorage.removeItem('gh_token');
+    }
+    throw new Error(j && j.message ? j.message : "GitHub upload failed");
+  }
+
+  const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${path}`;
+  return { rawUrl, path, resp: j };
+}
+
+/* Allow user to clear saved token if needed */
+window.__clearGhToken = ()=>{
+  localStorage.removeItem('gh_token');
+  alert("Saved GitHub token cleared from this browser.");
+};
+
+/* ========= FORM SUBMIT ========= */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!currentUser || currentUser.uid !== ADMIN_UID)
     return alert("Admin only!");
 
+  if(!cropper) return alert("Please choose and crop an image first.");
+
   uploadBtn.disabled = true;
   uploadBtn.innerHTML = `<div class='spinner'></div> Uploading...`;
 
-  cropper.getCroppedCanvas({ width:900, height:506 }).toBlob(async (blob)=>{
+  // get blob from cropper
+  cropper.getCroppedCanvas({ width:1600, height:900 }).toBlob(async (blob) => {
+    try {
+      // upload to GitHub
+      const up = await uploadBlobToGitHub(blob, (fileInput.files[0] && fileInput.files[0].name) || `news_${Date.now()}.jpg`);
+      const imgUrl = up.rawUrl;
 
-    const fd = new FormData();
-    fd.append("image", blob);
+      // save to firestore
+      await addDoc(collection(db,"news"),{
+        title: document.getElementById("title").value.trim(),
+        summary: document.getElementById("summary").value.trim(),
+        content: document.getElementById("content").value.trim(),
+        image: imgUrl,
+        likes: 0,
+        likedBy: [],
+        comments: [],
+        createdAt: serverTimestamp()
+      });
 
-    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,{
-      method:"POST",
-      body:fd
-    });
+      alert("News Added!");
+      popup.classList.remove("active");
+      form.reset();
+      imgPreview.style.display = "none";
+      cropper.destroy();
+      cropper = null;
+      resetAndLoad();
 
-    const data = await res.json();
-    const imgUrl = data.data.url;
-
-    await addDoc(collection(db,"news"),{
-      title: title.value,
-      summary: summary.value,
-      content: content.value,
-      image: imgUrl,
-      likes: 0,
-      likedBy: [],
-      comments: [],
-      createdAt: serverTimestamp()
-    });
-
-    alert("News Added!");
-    popup.classList.remove("active");
-    form.reset();
-    imgPreview.style.display = "none";
-    uploadBtn.disabled = false;
-    uploadBtn.innerHTML = "Upload & Save";
-
-    loadNews();
-  });
+    } catch(err) {
+      console.error("upload/save err", err);
+      alert("Failed: " + (err.message || err));
+    } finally {
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = "Upload & Save";
+    }
+  }, "image/jpeg", 0.9);
 });
 
-async function loadNews(){
-  const q = query(collection(db,"news"), orderBy("createdAt","desc"));
-  const snap = await getDocs(q);
-
+/* ========= LOAD NEWS (paged) ========= */
+async function resetAndLoad(){
+  lastVisible = null;
   newsContainer.innerHTML = "";
-
-  snap.forEach(docSnap=>{
-    const d = docSnap.data();
-    const isAdmin = currentUser && currentUser.uid === ADMIN_UID;
-
-    newsContainer.innerHTML += `
-      <div class="news-card">
-        <img src="${d.image}">
-        <h3>${d.title}</h3>
-        <p>${d.summary}</p>
-
-        <a href="news-detail.html?id=${docSnap.id}" class="read-btn">Read More</a>
-
-        <div class="card-footer">
-          <span>💬 ${d.comments?.length || 0}</span>
-          <span>❤️ ${d.likes || 0}</span>
-        </div>
-
-        ${isAdmin ?
-          `<button class="delete-btn" onclick="deleteNews('${docSnap.id}')">🗑️</button>` 
-        : ""}
-      </div>
-    `;
-  });
+  loadMoreWrap.style.display = "none";
+  await loadNextPage();
 }
 
-window.deleteNews = async function(id){
-  if(!confirm("Delete news?")) return;
-  await deleteDoc(doc(db,"news",id));
-  loadNews();
+async function loadNextPage(){
+  if(isFetching) return;
+  isFetching = true;
+  loadingHint.style.display = "block";
+  try{
+    let qref;
+    if(!lastVisible){
+      qref = query(collection(db,"news"), orderBy("createdAt","desc"), limit(PAGE_SIZE));
+    } else {
+      qref = query(collection(db,"news"), orderBy("createdAt","desc"), startAfter(lastVisible), limit(PAGE_SIZE));
+    }
+
+    const snap = await getDocs(qref);
+    if(snap.empty){
+      // nothing
+      if(!lastVisible){
+        newsContainer.innerHTML = `<div class="center">No news yet.</div>`;
+      }
+      loadMoreWrap.style.display = "none";
+      return;
+    }
+
+    // append items
+    snap.forEach(docSnap=>{
+      const d = docSnap.data();
+      const isAdmin = currentUser && currentUser.uid === ADMIN_UID;
+
+      const card = document.createElement("div");
+      card.className = "news-card";
+
+      const img = document.createElement("img");
+      img.src = d.image || "https://i.postimg.cc/PrV4N35r/user.png";
+      img.loading = "lazy";
+      img.onerror = ()=> img.src = "https://i.postimg.cc/PrV4N35r/user.png";
+
+      const title = document.createElement("h3");
+      title.textContent = d.title || "Untitled";
+
+      const summ = document.createElement("p");
+      summ.textContent = d.summary || "";
+
+      const footer = document.createElement("div");
+      footer.className = "card-footer";
+      footer.innerHTML = `<span>💬 ${d.comments?.length || 0}</span><span>❤️ ${d.likes || 0}</span>`;
+
+      const read = document.createElement("a");
+      read.className = "read-btn";
+      read.href = `news-detail.html?id=${docSnap.id}`;
+      read.textContent = "Read More";
+
+      card.appendChild(img);
+      card.appendChild(title);
+      card.appendChild(summ);
+      card.appendChild(read);
+      card.appendChild(footer);
+
+      if(isAdmin){
+        const del = document.createElement("button");
+        del.className = "delete-btn";
+        del.title = "Delete";
+        del.textContent = "🗑";
+        del.onclick = async ()=> {
+          if(!confirm("Delete news?")) return;
+          await deleteDoc(doc(db,"news",docSnap.id));
+          resetAndLoad();
+        };
+        del.style.display = "block";
+        card.appendChild(del);
+      }
+
+      newsContainer.appendChild(card);
+    });
+
+    // pagination cursor: last doc of this batch
+    lastVisible = snap.docs[snap.docs.length - 1];
+
+    // if we got full page, show load more (could be more)
+    if(snap.size === PAGE_SIZE){
+      loadMoreWrap.style.display = "block";
+    } else {
+      loadMoreWrap.style.display = "none";
+    }
+
+  }catch(err){
+    console.error("loadNews err", err);
+    if(!newsContainer.children.length) newsContainer.innerHTML = `<div class="center">Failed to load news.</div>`;
+    loadMoreWrap.style.display = "none";
+  }finally{
+    isFetching = false;
+    loadingHint.style.display = "none";
+  }
 }
+
+/* load more button */
+loadMoreBtn.addEventListener("click", ()=> {
+  loadNextPage();
+});
+
+/* infinite scroll (optional): load next when near bottom */
+let infiniteTimer = null;
+window.addEventListener("scroll", ()=>{
+  if(infiniteTimer) clearTimeout(infiniteTimer);
+  infiniteTimer = setTimeout(()=>{
+    const nearBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 300);
+    if(nearBottom && loadMoreWrap.style.display === "block") loadNextPage();
+  }, 120);
+});
+
+/* run initial load if header-ready didn't trigger auth */
+window.addEventListener("header-ready", ()=>{
+  // auth listener will trigger resetAndLoad; if not logged in yet, ensure we load once
+  if(!currentUser) resetAndLoad();
+});
+
+/* DOMContent fallback */
+document.addEventListener("DOMContentLoaded", ()=>{
+  setTimeout(()=> {
+    if(!newsContainer.children.length) resetAndLoad();
+  }, 600);
+});
 </script>
 </body>
 </html>
