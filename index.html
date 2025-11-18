@@ -502,6 +502,14 @@ document.addEventListener("DOMContentLoaded", ()=>{
     }
   }, 600);
 });
+
+// ===== SHOW EDIT HERO IF ADMIN =====
+onAuthStateChanged(auth, user=>{
+  const editHeroBtn = document.getElementById("editHeroBtn");
+  if(editHeroBtn){
+    editHeroBtn.style.display = (user && user.uid === ADMIN_UID) ? "block" : "none";
+  }
+});
 </script>
 
 </body>
